@@ -1,0 +1,21 @@
+{
+  "name": "actions-next-bundle-analyzer",
+  "version": "0.0.1",
+  "main": "dist/index.js",
+  "author": "Stephen Brandwood <614392+sbrandwoo@users.noreply.github.com>",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "build": "ncc build src/index.ts"
+  },
+  "devDependencies": {
+    "@actions/artifact": "^0.5.2",
+    "@actions/core": "^1.4.0",
+    "@actions/github": "^5.0.0",
+    "@types/adm-zip": "^0.4.34",
+    "@types/node": "^15.12.5",
+    "@vercel/ncc": "^0.28.6",
+    "adm-zip": "^0.5.5",
+    "typescript": "^4.3.4"
+  }
+}
