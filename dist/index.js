@@ -15577,16 +15577,16 @@ var FILE_NAME = 'bundle-sizes.json';
 function run() {
     var _a;
     return src_awaiter(this, void 0, void 0, function () {
-        var defaultBranch, octokit, issueNumber, masterBundleSizes, bundleSizes, prefix, markdownTable, body, e_1;
+        var baseBranch, octokit, issueNumber, masterBundleSizes, bundleSizes, prefix, markdownTable, body, e_1;
         return src_generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
                     _b.trys.push([0, 3, , 4]);
-                    defaultBranch = core.getInput('default-branch') || 'master';
+                    baseBranch = core.getInput('base-branch') || 'master';
                     octokit = github.getOctokit(process.env.GITHUB_TOKEN || '');
                     issueNumber = (_a = github.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.number;
-                    console.log("> Downloading bundle sizes from " + defaultBranch);
-                    return [4 /*yield*/, downloadArtifactAsJson(octokit, defaultBranch, github.context.workflow, ARTIFACT_NAME, FILE_NAME)];
+                    console.log("> Downloading bundle sizes from " + baseBranch);
+                    return [4 /*yield*/, downloadArtifactAsJson(octokit, baseBranch, github.context.workflow, ARTIFACT_NAME, FILE_NAME)];
                 case 1:
                     masterBundleSizes = (_b.sent()) || [];
                     console.log(masterBundleSizes);

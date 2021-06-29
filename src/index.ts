@@ -15,16 +15,16 @@ const FILE_NAME = 'bundle-sizes.json';
 
 async function run() {
   try {
-    const defaultBranch = core.getInput('default-branch') || 'master';
+    const baseBranch = core.getInput('base-branch') || 'master';
 
     const octokit = github.getOctokit(process.env.GITHUB_TOKEN || '');
     const issueNumber = github.context.payload.pull_request?.number;
 
-    console.log(`> Downloading bundle sizes from ${defaultBranch}`);
+    console.log(`> Downloading bundle sizes from ${baseBranch}`);
     const masterBundleSizes: PageBundleSizes =
       (await downloadArtifactAsJson(
         octokit,
-        defaultBranch,
+        baseBranch,
         github.context.workflow,
         ARTIFACT_NAME,
         FILE_NAME
