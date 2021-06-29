@@ -4,7 +4,7 @@ GitHub action that analyses the bundle sizes for each route in a Next.js build.
 
 ## Usage
 
-Add the following step to a workflow, after the Next.js project has been built (i.e. after running `yarn build`).
+Add the following step to a workflow which runs on a [pull_request](https://docs.github.com/en/actions/reference/events-that-trigger-workflows#pull_request) event, after the Next.js project has been built (i.e. after running `yarn build`).
 
 ```yml
 - name: Analyze bundle sizes
@@ -15,6 +15,7 @@ Add the following step to a workflow, after the Next.js project has been built (
     # Optional, defaults to master
     base-branch: master
   env:
+    # This secret is automatically injected by GitHub
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
