@@ -1,4 +1,10 @@
 name: 'Next.js bundle analyzer'
+inputs:
+  workflow-id:
+    description: 'Workflow ID containing this step'
+  base-branch:
+    description: 'Base branch of the repo (master or main)'
+    default: master
 runs:
   using: 'node12'
   main: 'dist/index.js'

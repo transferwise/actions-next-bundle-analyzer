@@ -10,6 +10,8 @@ Add the following step to a workflow, after the Next.js project has been built (
 - name: Analyze bundle sizes
   uses: transferwise/actions-next-bundle-analyzer@master
   with:
+    # Filename of the workflow this step is defined in
+    workflow-id: my-workflow.yml
     # Optional, defaults to master
     base-branch: master
   env:

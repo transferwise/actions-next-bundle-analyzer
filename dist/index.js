@@ -15422,14 +15422,14 @@ var download_artifacts_generator = (undefined && undefined.__generator) || funct
 };
 
 
-function downloadArtifactAsJson(octokit, branch, workflow, artifactName, fileName) {
+function downloadArtifactAsJson(octokit, branch, workflowId, artifactName, fileName) {
     return download_artifacts_awaiter(this, void 0, void 0, function () {
         var runs, artifacts, bundleSizeArtifact, zip, adm, bundleSizeEntry, e_1;
         return download_artifacts_generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 4, , 5]);
-                    return [4 /*yield*/, octokit.rest.actions.listWorkflowRuns(download_artifacts_assign(download_artifacts_assign({}, github.context.repo), { branch: branch, workflow_id: workflow, per_page: 1 }))];
+                    return [4 /*yield*/, octokit.rest.actions.listWorkflowRuns(download_artifacts_assign(download_artifacts_assign({}, github.context.repo), { branch: branch, workflow_id: workflowId, per_page: 1 }))];
                 case 1:
                     runs = _a.sent();
                     if (runs.data.workflow_runs.length === 0) {
@@ -15577,16 +15577,17 @@ var FILE_NAME = 'bundle-sizes.json';
 function run() {
     var _a;
     return src_awaiter(this, void 0, void 0, function () {
-        var baseBranch, octokit, issueNumber, masterBundleSizes, bundleSizes, prefix, markdownTable, body, e_1;
+        var workflowId, baseBranch, octokit, issueNumber, masterBundleSizes, bundleSizes, prefix, markdownTable, body, e_1;
         return src_generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
                     _b.trys.push([0, 3, , 4]);
+                    workflowId = core.getInput('workflow-id', { required: true });
                     baseBranch = core.getInput('base-branch') || 'master';
                     octokit = github.getOctokit(process.env.GITHUB_TOKEN || '');
                     issueNumber = (_a = github.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.number;
                     console.log("> Downloading bundle sizes from " + baseBranch);
-                    return [4 /*yield*/, downloadArtifactAsJson(octokit, baseBranch, github.context.workflow, ARTIFACT_NAME, FILE_NAME)];
+                    return [4 /*yield*/, downloadArtifactAsJson(octokit, baseBranch, workflowId, ARTIFACT_NAME, FILE_NAME)];
                 case 1:
                     masterBundleSizes = (_b.sent()) || [];
                     console.log(masterBundleSizes);

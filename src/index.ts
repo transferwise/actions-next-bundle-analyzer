@@ -15,6 +15,7 @@ const FILE_NAME = 'bundle-sizes.json';
 
 async function run() {
   try {
+    const workflowId = core.getInput('workflow-id', { required: true });
     const baseBranch = core.getInput('base-branch') || 'master';
 
     const octokit = github.getOctokit(process.env.GITHUB_TOKEN || '');
@@ -25,7 +26,7 @@ async function run() {
       (await downloadArtifactAsJson(
         octokit,
         baseBranch,
-        github.context.workflow,
+        workflowId,
         ARTIFACT_NAME,
         FILE_NAME
       )) || [];

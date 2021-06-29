@@ -6,7 +6,7 @@ import { Octokit } from './types';
 export async function downloadArtifactAsJson(
   octokit: Octokit,
   branch: string,
-  workflow: string,
+  workflowId: string,
   artifactName: string,
   fileName: string
 ): Promise<any | null> {
@@ -15,7 +15,7 @@ export async function downloadArtifactAsJson(
     const runs = await octokit.rest.actions.listWorkflowRuns({
       ...github.context.repo,
       branch,
-      workflow_id: workflow,
+      workflow_id: workflowId,
       per_page: 1,
     });
     if (runs.data.workflow_runs.length === 0) {
