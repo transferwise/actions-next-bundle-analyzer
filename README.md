@@ -8,7 +8,7 @@ Add the following step to a workflow, after the Next.js project has been built (
 
 ```yml
 - name: Analyze bundle sizes
-  uses: @transferwise/actions-next-bundle-analyzer@master
+  uses: transferwise/actions-next-bundle-analyzer@master
   with:
     # Optional, defaults to master
     default-branch: master
