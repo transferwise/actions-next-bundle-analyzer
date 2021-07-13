@@ -12,6 +12,9 @@ export async function downloadArtifactAsJson(
 ): Promise<any | null> {
   try {
     // Find latest workflow run on master
+    console.log(
+      `Fetching workflow runs for '${workflowId}' on branch '${branch}'...`
+    );
     const runs = await octokit.rest.actions.listWorkflowRuns({
       ...github.context.repo,
       branch,
@@ -19,10 +22,14 @@ export async function downloadArtifactAsJson(
       per_page: 1,
     });
     if (runs.data.workflow_runs.length === 0) {
+      console.log(`Could not find any previous workflow runs`);
       return null;
     }
 
     // Find the bundle-size artifact on this workflow run
+    console.log(
+      `Fetching artifact information for run ${runs.data.workflow_runs[0].id}...`
+    );
     const artifacts = await octokit.rest.actions.listWorkflowRunArtifacts({
       ...github.context.repo,
       run_id: runs.data.workflow_runs[0].id,
@@ -31,10 +38,14 @@ export async function downloadArtifactAsJson(
       (artifact) => artifact.name === artifactName
     );
     if (!bundleSizeArtifact) {
+      console.log(`Could not find bundle size artifact on run`);
       return null;
     }
 
     // Download a zip of the artifact and find the JSON file
+    console.log(
+      `Downloading artifact ZIP for artifact ${bundleSizeArtifact.id}...`
+    );
     const zip = await octokit.rest.actions.downloadArtifact({
       ...github.context.repo,
       artifact_id: bundleSizeArtifact.id,
@@ -47,6 +58,7 @@ export async function downloadArtifactAsJson(
       .getEntries()
       .find((entry) => entry.entryName === fileName);
     if (!bundleSizeEntry) {
+      console.log(`Could not find file '${fileName}' in artifact`);
       return null;
     }
 
