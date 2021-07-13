@@ -15430,7 +15430,7 @@ function downloadArtifactAsJson(octokit, branch, workflowId, artifactName, fileN
                 case 0:
                     _a.trys.push([0, 4, , 5]);
                     // Find latest workflow run on master
-                    console.log("Fetching workflows for workflow '" + workflowId + "' branch '" + branch + "'...");
+                    console.log("Fetching workflow runs for '" + workflowId + "' on branch '" + branch + "'...");
                     return [4 /*yield*/, octokit.rest.actions.listWorkflowRuns(download_artifacts_assign(download_artifacts_assign({}, github.context.repo), { branch: branch, workflow_id: workflowId, per_page: 1 }))];
                 case 1:
                     runs = _a.sent();

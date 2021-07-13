@@ -13,7 +13,7 @@ export async function downloadArtifactAsJson(
   try {
     // Find latest workflow run on master
     console.log(
-      `Fetching workflows for workflow '${workflowId}' branch '${branch}'...`
+      `Fetching workflow runs for '${workflowId}' on branch '${branch}'...`
     );
     const runs = await octokit.rest.actions.listWorkflowRuns({
       ...github.context.repo,
