@@ -15429,19 +15429,27 @@ function downloadArtifactAsJson(octokit, branch, workflowId, artifactName, fileN
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 4, , 5]);
+                    // Find latest workflow run on master
+                    console.log("Fetching workflows for workflow '" + workflowId + "' branch '" + branch + "'...");
                     return [4 /*yield*/, octokit.rest.actions.listWorkflowRuns(download_artifacts_assign(download_artifacts_assign({}, github.context.repo), { branch: branch, workflow_id: workflowId, per_page: 1 }))];
                 case 1:
                     runs = _a.sent();
                     if (runs.data.workflow_runs.length === 0) {
+                        console.log("Could not find any previous workflow runs");
                         return [2 /*return*/, null];
                     }
+                    // Find the bundle-size artifact on this workflow run
+                    console.log("Fetching artifact information for run " + runs.data.workflow_runs[0].id + "...");
                     return [4 /*yield*/, octokit.rest.actions.listWorkflowRunArtifacts(download_artifacts_assign(download_artifacts_assign({}, github.context.repo), { run_id: runs.data.workflow_runs[0].id }))];
                 case 2:
                     artifacts = _a.sent();
                     bundleSizeArtifact = artifacts.data.artifacts.find(function (artifact) { return artifact.name === artifactName; });
                     if (!bundleSizeArtifact) {
+                        console.log("Could not find bundle size artifact on run");
                         return [2 /*return*/, null];
                     }
+                    // Download a zip of the artifact and find the JSON file
+                    console.log("Downloading artifact ZIP for artifact " + bundleSizeArtifact.id + "...");
                     return [4 /*yield*/, octokit.rest.actions.downloadArtifact(download_artifacts_assign(download_artifacts_assign({}, github.context.repo), { artifact_id: bundleSizeArtifact.id, archive_format: 'zip' }))];
                 case 3:
                     zip = _a.sent();
@@ -15450,6 +15458,7 @@ function downloadArtifactAsJson(octokit, branch, workflowId, artifactName, fileN
                         .getEntries()
                         .find(function (entry) { return entry.entryName === fileName; });
                     if (!bundleSizeEntry) {
+                        console.log("Could not find file '" + fileName + "' in artifact");
                         return [2 /*return*/, null];
                     }
                     // Parse and return the JSON
