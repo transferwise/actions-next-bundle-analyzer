@@ -20,6 +20,7 @@ export async function downloadArtifactAsJson(
       branch,
       workflow_id: workflowId,
       per_page: 1,
+      status: 'success',
     });
     if (runs.data.workflow_runs.length === 0) {
       console.log(`Could not find any previous workflow runs`);
