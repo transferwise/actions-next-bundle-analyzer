@@ -15424,22 +15424,23 @@ var download_artifacts_generator = (undefined && undefined.__generator) || funct
 
 function downloadArtifactAsJson(octokit, branch, workflowId, artifactName, fileName) {
     return download_artifacts_awaiter(this, void 0, void 0, function () {
-        var runs, artifacts, bundleSizeArtifact, zip, adm, bundleSizeEntry, e_1;
+        var runs, latestRun, artifacts, bundleSizeArtifact, zip, adm, bundleSizeEntry, e_1;
         return download_artifacts_generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 4, , 5]);
                     // Find latest workflow run on master
                     console.log("Fetching workflow runs for '" + workflowId + "' on branch '" + branch + "'...");
-                    return [4 /*yield*/, octokit.rest.actions.listWorkflowRuns(download_artifacts_assign(download_artifacts_assign({}, github.context.repo), { branch: branch, workflow_id: workflowId, per_page: 1 }))];
+                    return [4 /*yield*/, octokit.rest.actions.listWorkflowRuns(download_artifacts_assign(download_artifacts_assign({}, github.context.repo), { branch: branch, workflow_id: workflowId, per_page: 1, status: 'success' }))];
                 case 1:
                     runs = _a.sent();
                     if (runs.data.workflow_runs.length === 0) {
                         console.log("Could not find any previous workflow runs");
                         return [2 /*return*/, null];
                     }
+                    latestRun = runs.data.workflow_runs[0];
                     // Find the bundle-size artifact on this workflow run
-                    console.log("Fetching artifact information for run " + runs.data.workflow_runs[0].id + "...");
+                    console.log("Fetching artifact information for commit " + latestRun.head_sha + " run " + latestRun.id + "...");
                     return [4 /*yield*/, octokit.rest.actions.listWorkflowRunArtifacts(download_artifacts_assign(download_artifacts_assign({}, github.context.repo), { run_id: runs.data.workflow_runs[0].id }))];
                 case 2:
                     artifacts = _a.sent();
@@ -15462,7 +15463,10 @@ function downloadArtifactAsJson(octokit, branch, workflowId, artifactName, fileN
                         return [2 /*return*/, null];
                     }
                     // Parse and return the JSON
-                    return [2 /*return*/, JSON.parse(bundleSizeEntry.getData().toString())];
+                    return [2 /*return*/, {
+                            sha: latestRun.head_sha,
+                            data: JSON.parse(bundleSizeEntry.getData().toString()),
+                        }];
                 case 4:
                     e_1 = _a.sent();
                     console.log('Failed to download artifacts', e_1);
@@ -15586,7 +15590,7 @@ var FILE_NAME = 'bundle-sizes.json';
 function run() {
     var _a;
     return src_awaiter(this, void 0, void 0, function () {
-        var workflowId, baseBranch, octokit, issueNumber, masterBundleSizes, bundleSizes, prefix, markdownTable, body, e_1;
+        var workflowId, baseBranch, octokit, issueNumber, masterBundleSizes, bundleSizes, prefix, info, markdownTable, body, e_1;
         return src_generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
@@ -15598,7 +15602,7 @@ function run() {
                     console.log("> Downloading bundle sizes from " + baseBranch);
                     return [4 /*yield*/, downloadArtifactAsJson(octokit, baseBranch, workflowId, ARTIFACT_NAME, FILE_NAME)];
                 case 1:
-                    masterBundleSizes = (_b.sent()) || [];
+                    masterBundleSizes = (_b.sent()) || { sha: 'none', data: [] };
                     console.log(masterBundleSizes);
                     console.log('> Calculating local bundle sizes');
                     bundleSizes = getBundleSizes();
@@ -15610,8 +15614,9 @@ function run() {
                     console.log('> Commenting on PR');
                     if (issueNumber) {
                         prefix = '### Bundle Sizes';
-                        markdownTable = getMarkdownTable(masterBundleSizes, bundleSizes);
-                        body = prefix + "\n\n" + markdownTable;
+                        info = "Compared against " + masterBundleSizes.sha;
+                        markdownTable = getMarkdownTable(masterBundleSizes.data, bundleSizes);
+                        body = prefix + "\n\n" + info + "\n\n" + markdownTable;
                         createOrReplaceComment(octokit, issueNumber, prefix, body);
                     }
                     return [3 /*break*/, 4];

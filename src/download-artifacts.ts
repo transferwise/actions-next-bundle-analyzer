@@ -2,6 +2,7 @@ import AdmZip from 'adm-zip';
 import * as github from '@actions/github';
 
 import { Octokit } from './types';
+import { PageBundleSizes } from './bundle-size';
 
 export async function downloadArtifactAsJson(
   octokit: Octokit,
@@ -9,7 +10,7 @@ export async function downloadArtifactAsJson(
   workflowId: string,
   artifactName: string,
   fileName: string
-): Promise<any | null> {
+): Promise<{ sha: string; data: PageBundleSizes } | null> {
   try {
     // Find latest workflow run on master
     console.log(
@@ -20,15 +21,17 @@ export async function downloadArtifactAsJson(
       branch,
       workflow_id: workflowId,
       per_page: 1,
+      status: 'success',
     });
     if (runs.data.workflow_runs.length === 0) {
       console.log(`Could not find any previous workflow runs`);
       return null;
     }
+    const latestRun = runs.data.workflow_runs[0];
 
     // Find the bundle-size artifact on this workflow run
     console.log(
-      `Fetching artifact information for run ${runs.data.workflow_runs[0].id}...`
+      `Fetching artifact information for commit ${latestRun.head_sha} run ${latestRun.id}...`
     );
     const artifacts = await octokit.rest.actions.listWorkflowRunArtifacts({
       ...github.context.repo,
@@ -63,7 +66,10 @@ export async function downloadArtifactAsJson(
     }
 
     // Parse and return the JSON
-    return JSON.parse(bundleSizeEntry.getData().toString());
+    return {
+      sha: latestRun.head_sha,
+      data: JSON.parse(bundleSizeEntry.getData().toString()),
+    };
   } catch (e) {
     console.log('Failed to download artifacts', e);
     return null;
