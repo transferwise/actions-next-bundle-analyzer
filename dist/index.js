@@ -15424,22 +15424,23 @@ var download_artifacts_generator = (undefined && undefined.__generator) || funct
 
 function downloadArtifactAsJson(octokit, branch, workflowId, artifactName, fileName) {
     return download_artifacts_awaiter(this, void 0, void 0, function () {
-        var runs, artifacts, bundleSizeArtifact, zip, adm, bundleSizeEntry, e_1;
+        var runs, latestRun, artifacts, bundleSizeArtifact, zip, adm, bundleSizeEntry, e_1;
         return download_artifacts_generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 4, , 5]);
                     // Find latest workflow run on master
                     console.log("Fetching workflow runs for '" + workflowId + "' on branch '" + branch + "'...");
-                    return [4 /*yield*/, octokit.rest.actions.listWorkflowRuns(download_artifacts_assign(download_artifacts_assign({}, github.context.repo), { branch: branch, workflow_id: workflowId, per_page: 1 }))];
+                    return [4 /*yield*/, octokit.rest.actions.listWorkflowRuns(download_artifacts_assign(download_artifacts_assign({}, github.context.repo), { branch: branch, workflow_id: workflowId, per_page: 1, status: 'success' }))];
                 case 1:
                     runs = _a.sent();
                     if (runs.data.workflow_runs.length === 0) {
                         console.log("Could not find any previous workflow runs");
                         return [2 /*return*/, null];
                     }
+                    latestRun = runs.data.workflow_runs[0];
                     // Find the bundle-size artifact on this workflow run
-                    console.log("Fetching artifact information for run " + runs.data.workflow_runs[0].id + "...");
+                    console.log("Fetching artifact information for commit " + latestRun.head_sha + " run " + latestRun.id + "...");
                     return [4 /*yield*/, octokit.rest.actions.listWorkflowRunArtifacts(download_artifacts_assign(download_artifacts_assign({}, github.context.repo), { run_id: runs.data.workflow_runs[0].id }))];
                 case 2:
                     artifacts = _a.sent();

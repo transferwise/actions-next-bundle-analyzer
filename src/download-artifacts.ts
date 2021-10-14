@@ -26,10 +26,11 @@ export async function downloadArtifactAsJson(
       console.log(`Could not find any previous workflow runs`);
       return null;
     }
+    const latestRun = runs.data.workflow_runs[0];
 
     // Find the bundle-size artifact on this workflow run
     console.log(
-      `Fetching artifact information for run ${runs.data.workflow_runs[0].id}...`
+      `Fetching artifact information for commit ${latestRun.head_sha} run ${latestRun.id}...`
     );
     const artifacts = await octokit.rest.actions.listWorkflowRunArtifacts({
       ...github.context.repo,
