@@ -15463,7 +15463,10 @@ function downloadArtifactAsJson(octokit, branch, workflowId, artifactName, fileN
                         return [2 /*return*/, null];
                     }
                     // Parse and return the JSON
-                    return [2 /*return*/, JSON.parse(bundleSizeEntry.getData().toString())];
+                    return [2 /*return*/, {
+                            sha: latestRun.head_sha,
+                            data: JSON.parse(bundleSizeEntry.getData().toString()),
+                        }];
                 case 4:
                     e_1 = _a.sent();
                     console.log('Failed to download artifacts', e_1);
@@ -15587,7 +15590,7 @@ var FILE_NAME = 'bundle-sizes.json';
 function run() {
     var _a;
     return src_awaiter(this, void 0, void 0, function () {
-        var workflowId, baseBranch, octokit, issueNumber, masterBundleSizes, bundleSizes, prefix, markdownTable, body, e_1;
+        var workflowId, baseBranch, octokit, issueNumber, masterBundleSizes, bundleSizes, prefix, info, markdownTable, body, e_1;
         return src_generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
@@ -15599,7 +15602,7 @@ function run() {
                     console.log("> Downloading bundle sizes from " + baseBranch);
                     return [4 /*yield*/, downloadArtifactAsJson(octokit, baseBranch, workflowId, ARTIFACT_NAME, FILE_NAME)];
                 case 1:
-                    masterBundleSizes = (_b.sent()) || [];
+                    masterBundleSizes = (_b.sent()) || { sha: 'none', data: [] };
                     console.log(masterBundleSizes);
                     console.log('> Calculating local bundle sizes');
                     bundleSizes = getBundleSizes();
@@ -15611,8 +15614,9 @@ function run() {
                     console.log('> Commenting on PR');
                     if (issueNumber) {
                         prefix = '### Bundle Sizes';
-                        markdownTable = getMarkdownTable(masterBundleSizes, bundleSizes);
-                        body = prefix + "\n\n" + markdownTable;
+                        info = "Compared against " + masterBundleSizes.sha;
+                        markdownTable = getMarkdownTable(masterBundleSizes.data, bundleSizes);
+                        body = prefix + "\n\n" + info + "\n\n" + markdownTable;
                         createOrReplaceComment(octokit, issueNumber, prefix, body);
                     }
                     return [3 /*break*/, 4];

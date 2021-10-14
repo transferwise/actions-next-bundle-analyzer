@@ -2,6 +2,7 @@ import AdmZip from 'adm-zip';
 import * as github from '@actions/github';
 
 import { Octokit } from './types';
+import { PageBundleSizes } from './bundle-size';
 
 export async function downloadArtifactAsJson(
   octokit: Octokit,
@@ -9,7 +10,7 @@ export async function downloadArtifactAsJson(
   workflowId: string,
   artifactName: string,
   fileName: string
-): Promise<any | null> {
+): Promise<{ sha: string; data: PageBundleSizes } | null> {
   try {
     // Find latest workflow run on master
     console.log(
@@ -65,7 +66,10 @@ export async function downloadArtifactAsJson(
     }
 
     // Parse and return the JSON
-    return JSON.parse(bundleSizeEntry.getData().toString());
+    return {
+      sha: latestRun.head_sha,
+      data: JSON.parse(bundleSizeEntry.getData().toString()),
+    };
   } catch (e) {
     console.log('Failed to download artifacts', e);
     return null;

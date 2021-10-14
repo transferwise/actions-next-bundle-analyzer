@@ -22,14 +22,13 @@ async function run() {
     const issueNumber = github.context.payload.pull_request?.number;
 
     console.log(`> Downloading bundle sizes from ${baseBranch}`);
-    const masterBundleSizes: PageBundleSizes =
-      (await downloadArtifactAsJson(
-        octokit,
-        baseBranch,
-        workflowId,
-        ARTIFACT_NAME,
-        FILE_NAME
-      )) || [];
+    const masterBundleSizes = (await downloadArtifactAsJson(
+      octokit,
+      baseBranch,
+      workflowId,
+      ARTIFACT_NAME,
+      FILE_NAME
+    )) || { sha: 'none', data: [] };
     console.log(masterBundleSizes);
 
     console.log('> Calculating local bundle sizes');
@@ -42,8 +41,12 @@ async function run() {
     console.log('> Commenting on PR');
     if (issueNumber) {
       const prefix = '### Bundle Sizes';
-      const markdownTable = getMarkdownTable(masterBundleSizes, bundleSizes);
-      const body = `${prefix}\n\n${markdownTable}`;
+      const info = `Compared against ${masterBundleSizes.sha}`;
+      const markdownTable = getMarkdownTable(
+        masterBundleSizes.data,
+        bundleSizes
+      );
+      const body = `${prefix}\n\n${info}\n\n${markdownTable}`;
       createOrReplaceComment(octokit, issueNumber, prefix, body);
     }
   } catch (e) {
