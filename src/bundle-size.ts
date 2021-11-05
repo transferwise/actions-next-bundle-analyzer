@@ -6,10 +6,12 @@ type BuildManifest = {
   pages: Record<string, string[]>;
 };
 
+type ReactLoadableManifest = Record<string, { id: string, file: string }[]>;
+
 export type PageBundleSizes = { page: string; size: number }[];
 
-export function getBundleSizes(): PageBundleSizes {
-  const manifest = loadManifest();
+export function getStaticBundleSizes(): PageBundleSizes {
+  const manifest = loadBuildManifest();
 
   const pageSizes: PageBundleSizes = Object.entries(manifest.pages).map(([page, files]) => {
     const size = files
@@ -27,14 +29,49 @@ export function getBundleSizes(): PageBundleSizes {
   return pageSizes;
 }
 
-function loadManifest(): BuildManifest {
+export function getDynamicBundleSizes(): PageBundleSizes {
+  const staticManifest = loadBuildManifest();
+  const manifest = loadReactLoadableManifest(staticManifest.pages['/_app']);
+
+  const pageSizes: PageBundleSizes = Object.entries(manifest.pages).map(([page, files]) => {
+    const size = files
+      .map((filename: string) => {
+        const fn = path.join(process.cwd(), '.next', filename);
+        const bytes = fs.readFileSync(fn);
+        const gzipped = zlib.gzipSync(bytes);
+        return gzipped.byteLength;
+      })
+      .reduce((s: number, b: number) => s + b, 0);
+
+    return { page, size };
+  });
+
+  return pageSizes;
+}
+
+function loadBuildManifest(): BuildManifest {
   const file = fs.readFileSync(path.join(process.cwd(), '.next', 'build-manifest.json'), 'utf-8');
   return JSON.parse(file);
 }
 
+function loadReactLoadableManifest(appChunks: string[]): BuildManifest {
+  const file = fs.readFileSync(path.join(process.cwd(), '.next', 'react-loadable-manifest.json'), 'utf-8');
+  const content = JSON.parse(file) as ReactLoadableManifest;
+  const pages = {} as BuildManifest["pages"];
+  Object.keys(content).map(item => {
+    const fileList = content[item].map(({file}) => file);
+    const uniqueFileList = Array.from(new Set(fileList));
+    pages[item] = uniqueFileList.filter(file => !appChunks.find(chunkFile => file === chunkFile));
+  });
+  return {
+    pages,
+  }
+}
+
 export function getMarkdownTable(
-  masterBundleSizes: PageBundleSizes,
+  masterBundleSizes: PageBundleSizes = [],
   bundleSizes: PageBundleSizes,
+  name: string = 'Route'
 ): string {
   // Produce a Markdown table with each page, its size and difference to master
   const sizes = bundleSizes
@@ -50,7 +87,11 @@ export function getMarkdownTable(
     )
     .join('\n');
 
-  return `| Route | Size (gzipped) | Diff |
+  if (!sizes) {
+    return '';
+  }
+
+  return `| ${name} | Size (gzipped) | Diff |
   | --- | --- | --- |
   ${sizes}`;
 }

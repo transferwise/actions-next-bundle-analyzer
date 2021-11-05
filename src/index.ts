@@ -1,7 +1,8 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import {
-  getBundleSizes,
+  getStaticBundleSizes,
+  getDynamicBundleSizes,
   getMarkdownTable,
   PageBundleSizes,
 } from './bundle-size';
@@ -28,25 +29,35 @@ async function run() {
       workflowId,
       ARTIFACT_NAME,
       FILE_NAME
-    )) || { sha: 'none', data: [] };
+    )) || { sha: 'none', data: {route: [], dynamicChunks: []}};
     console.log(masterBundleSizes);
 
     console.log('> Calculating local bundle sizes');
-    const bundleSizes = getBundleSizes();
+    const bundleSizes = getStaticBundleSizes();
     console.log(bundleSizes);
+    const dynamicBundleSizes = getDynamicBundleSizes();
+    console.log(dynamicBundleSizes);
 
     console.log('> Uploading local bundle sizes');
-    await uploadJsonAsArtifact(ARTIFACT_NAME, FILE_NAME, bundleSizes);
+    await uploadJsonAsArtifact(ARTIFACT_NAME, FILE_NAME, {
+      route: bundleSizes,
+      dynamicChunks: dynamicBundleSizes,
+    });
 
     console.log('> Commenting on PR');
     if (issueNumber) {
       const prefix = '### Bundle Sizes';
       const info = `Compared against ${masterBundleSizes.sha}`;
       const markdownTable = getMarkdownTable(
-        masterBundleSizes.data,
+        Array.isArray(masterBundleSizes.data) ? masterBundleSizes.data : masterBundleSizes.data.route,
         bundleSizes
       );
-      const body = `${prefix}\n\n${info}\n\n${markdownTable}`;
+      const dynamicMarkdownTable = getMarkdownTable(
+        masterBundleSizes.data.dynamicChunks,
+        dynamicBundleSizes,
+        'Dynamic chunks'
+      );
+      const body = `${prefix}\n\n${info}\n\n${markdownTable}\n\n${dynamicMarkdownTable}`;
       createOrReplaceComment(octokit, issueNumber, prefix, body);
     }
   } catch (e) {
