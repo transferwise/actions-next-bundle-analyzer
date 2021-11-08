@@ -13,6 +13,7 @@ import { uploadJsonAsArtifact } from './upload-artifacts';
 
 const ARTIFACT_NAME = 'next-bundle-analyzer';
 const FILE_NAME = 'bundle-sizes.json';
+const DYNAMIC_FILE_NAME = 'dynamic-bundle-sizes.json';
 
 async function run() {
   try {
@@ -29,8 +30,16 @@ async function run() {
       workflowId,
       ARTIFACT_NAME,
       FILE_NAME
-    )) || { sha: 'none', data: {route: [], dynamicChunks: []}};
+    )) || { sha: 'none', data: [] };
     console.log(masterBundleSizes);
+    const masterDynamicBundleSizes = (await downloadArtifactAsJson(
+      octokit,
+      baseBranch,
+      workflowId,
+      ARTIFACT_NAME,
+      DYNAMIC_FILE_NAME
+    )) || { sha: 'none', data: [] };
+    console.log(masterDynamicBundleSizes);
 
     console.log('> Calculating local bundle sizes');
     const bundleSizes = getStaticBundleSizes();
@@ -39,25 +48,27 @@ async function run() {
     console.log(dynamicBundleSizes);
 
     console.log('> Uploading local bundle sizes');
-    await uploadJsonAsArtifact(ARTIFACT_NAME, FILE_NAME, {
-      route: bundleSizes,
-      dynamicChunks: dynamicBundleSizes,
-    });
+    await uploadJsonAsArtifact(ARTIFACT_NAME, FILE_NAME, bundleSizes);
+    await uploadJsonAsArtifact(ARTIFACT_NAME, DYNAMIC_FILE_NAME, dynamicBundleSizes);
 
     console.log('> Commenting on PR');
     if (issueNumber) {
       const prefix = '### Bundle Sizes';
       const info = `Compared against ${masterBundleSizes.sha}`;
       const markdownTable = getMarkdownTable(
-        Array.isArray(masterBundleSizes.data) ? masterBundleSizes.data : masterBundleSizes.data.route,
+        masterBundleSizes.data,
         bundleSizes
       );
+      let dynamicBundleInfo;
+      if (masterBundleSizes.sha !== masterDynamicBundleSizes.sha) {
+        dynamicBundleInfo = `Compared against ${masterDynamicBundleSizes.sha}`;
+      }
       const dynamicMarkdownTable = getMarkdownTable(
-        masterBundleSizes.data.dynamicChunks,
+        masterDynamicBundleSizes.data,
         dynamicBundleSizes,
         'Dynamic chunks'
       );
-      const body = `${prefix}\n\n${info}\n\n${markdownTable}\n\n${dynamicMarkdownTable}`;
+      const body = `${prefix}\n\n${info}\n\n${markdownTable}\n\n${dynamicBundleInfo ? `${dynamicBundleInfo}\n\n` : ''}${dynamicMarkdownTable}`;
       createOrReplaceComment(octokit, issueNumber, prefix, body);
     }
   } catch (e) {

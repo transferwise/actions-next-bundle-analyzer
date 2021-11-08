@@ -10,7 +10,7 @@ export async function downloadArtifactAsJson(
   workflowId: string,
   artifactName: string,
   fileName: string
-): Promise<{ sha: string; data: { route: PageBundleSizes, dynamicChunks: PageBundleSizes } } | null> {
+): Promise<{ sha: string; data: PageBundleSizes } | null> {
   try {
     // Find latest workflow run on master
     console.log(

@@ -15615,14 +15615,15 @@ var src_generator = (undefined && undefined.__generator) || function (thisArg, b
 
 var ARTIFACT_NAME = 'next-bundle-analyzer';
 var FILE_NAME = 'bundle-sizes.json';
+var DYNAMIC_FILE_NAME = 'dynamic-bundle-sizes.json';
 function run() {
     var _a;
     return src_awaiter(this, void 0, void 0, function () {
-        var workflowId, baseBranch, octokit, issueNumber, masterBundleSizes, bundleSizes, dynamicBundleSizes, prefix, info, markdownTable, dynamicMarkdownTable, body, e_1;
+        var workflowId, baseBranch, octokit, issueNumber, masterBundleSizes, masterDynamicBundleSizes, bundleSizes, dynamicBundleSizes, prefix, info, markdownTable, dynamicBundleInfo, dynamicMarkdownTable, body, e_1;
         return src_generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
-                    _b.trys.push([0, 3, , 4]);
+                    _b.trys.push([0, 5, , 6]);
                     workflowId = core.getInput('workflow-id', { required: true });
                     baseBranch = core.getInput('base-branch') || 'master';
                     octokit = github.getOctokit(process.env.GITHUB_TOKEN || '');
@@ -15630,36 +15631,44 @@ function run() {
                     console.log("> Downloading bundle sizes from " + baseBranch);
                     return [4 /*yield*/, downloadArtifactAsJson(octokit, baseBranch, workflowId, ARTIFACT_NAME, FILE_NAME)];
                 case 1:
-                    masterBundleSizes = (_b.sent()) || { sha: 'none', data: { route: [], dynamicChunks: [] } };
+                    masterBundleSizes = (_b.sent()) || { sha: 'none', data: [] };
                     console.log(masterBundleSizes);
+                    return [4 /*yield*/, downloadArtifactAsJson(octokit, baseBranch, workflowId, ARTIFACT_NAME, DYNAMIC_FILE_NAME)];
+                case 2:
+                    masterDynamicBundleSizes = (_b.sent()) || { sha: 'none', data: [] };
+                    console.log(masterDynamicBundleSizes);
                     console.log('> Calculating local bundle sizes');
                     bundleSizes = getStaticBundleSizes();
                     console.log(bundleSizes);
                     dynamicBundleSizes = getDynamicBundleSizes();
                     console.log(dynamicBundleSizes);
                     console.log('> Uploading local bundle sizes');
-                    return [4 /*yield*/, uploadJsonAsArtifact(ARTIFACT_NAME, FILE_NAME, {
-                            route: bundleSizes,
-                            dynamicChunks: dynamicBundleSizes,
-                        })];
-                case 2:
+                    return [4 /*yield*/, uploadJsonAsArtifact(ARTIFACT_NAME, FILE_NAME, bundleSizes)];
+                case 3:
+                    _b.sent();
+                    return [4 /*yield*/, uploadJsonAsArtifact(ARTIFACT_NAME, DYNAMIC_FILE_NAME, dynamicBundleSizes)];
+                case 4:
                     _b.sent();
                     console.log('> Commenting on PR');
                     if (issueNumber) {
                         prefix = '### Bundle Sizes';
                         info = "Compared against " + masterBundleSizes.sha;
-                        markdownTable = getMarkdownTable(Array.isArray(masterBundleSizes.data) ? masterBundleSizes.data : masterBundleSizes.data.route, bundleSizes);
-                        dynamicMarkdownTable = getMarkdownTable(masterBundleSizes.data.dynamicChunks, dynamicBundleSizes, 'Dynamic chunks');
-                        body = prefix + "\n\n" + info + "\n\n" + markdownTable + "\n\n" + dynamicMarkdownTable;
+                        markdownTable = getMarkdownTable(masterBundleSizes.data, bundleSizes);
+                        dynamicBundleInfo = void 0;
+                        if (masterBundleSizes.sha !== masterDynamicBundleSizes.sha) {
+                            dynamicBundleInfo = "Compared against " + masterDynamicBundleSizes.sha;
+                        }
+                        dynamicMarkdownTable = getMarkdownTable(masterDynamicBundleSizes.data, dynamicBundleSizes, 'Dynamic chunks');
+                        body = prefix + "\n\n" + info + "\n\n" + markdownTable + "\n\n" + (dynamicBundleInfo ? dynamicBundleInfo + "\n\n" : '') + dynamicMarkdownTable;
                         createOrReplaceComment(octokit, issueNumber, prefix, body);
                     }
-                    return [3 /*break*/, 4];
-                case 3:
+                    return [3 /*break*/, 6];
+                case 5:
                     e_1 = _b.sent();
                     console.log(e_1);
                     core.setFailed(e_1.message);
-                    return [3 /*break*/, 4];
-                case 4: return [2 /*return*/];
+                    return [3 /*break*/, 6];
+                case 6: return [2 /*return*/];
             }
         });
     });
