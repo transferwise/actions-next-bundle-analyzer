@@ -13,27 +13,18 @@ export type PageBundleSizes = { page: string; size: number }[];
 export function getStaticBundleSizes(): PageBundleSizes {
   const manifest = loadBuildManifest();
 
-  const pageSizes: PageBundleSizes = Object.entries(manifest.pages).map(([page, files]) => {
-    const size = files
-      .map((filename: string) => {
-        const fn = path.join(process.cwd(), '.next', filename);
-        const bytes = fs.readFileSync(fn);
-        const gzipped = zlib.gzipSync(bytes);
-        return gzipped.byteLength;
-      })
-      .reduce((s: number, b: number) => s + b, 0);
-
-    return { page, size };
-  });
-
-  return pageSizes;
+  return getPageSizesFromManifest(manifest);
 }
 
 export function getDynamicBundleSizes(): PageBundleSizes {
   const staticManifest = loadBuildManifest();
   const manifest = loadReactLoadableManifest(staticManifest.pages['/_app']);
 
-  const pageSizes: PageBundleSizes = Object.entries(manifest.pages).map(([page, files]) => {
+  return getPageSizesFromManifest(manifest);
+}
+
+function getPageSizesFromManifest(manifest: BuildManifest): PageBundleSizes {
+  return Object.entries(manifest.pages).map(([page, files]) => {
     const size = files
       .map((filename: string) => {
         const fn = path.join(process.cwd(), '.next', filename);
@@ -45,8 +36,6 @@ export function getDynamicBundleSizes(): PageBundleSizes {
 
     return { page, size };
   });
-
-  return pageSizes;
 }
 
 function loadBuildManifest(): BuildManifest {

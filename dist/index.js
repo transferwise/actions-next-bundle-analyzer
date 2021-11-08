@@ -15236,24 +15236,15 @@ var external_zlib_default = /*#__PURE__*/__nccwpck_require__.n(external_zlib_);
 
 function getStaticBundleSizes() {
     var manifest = loadBuildManifest();
-    var pageSizes = Object.entries(manifest.pages).map(function (_a) {
-        var page = _a[0], files = _a[1];
-        var size = files
-            .map(function (filename) {
-            var fn = external_path_default().join(process.cwd(), '.next', filename);
-            var bytes = external_fs_default().readFileSync(fn);
-            var gzipped = external_zlib_default().gzipSync(bytes);
-            return gzipped.byteLength;
-        })
-            .reduce(function (s, b) { return s + b; }, 0);
-        return { page: page, size: size };
-    });
-    return pageSizes;
+    return getPageSizesFromManifest(manifest);
 }
 function getDynamicBundleSizes() {
     var staticManifest = loadBuildManifest();
     var manifest = loadReactLoadableManifest(staticManifest.pages['/_app']);
-    var pageSizes = Object.entries(manifest.pages).map(function (_a) {
+    return getPageSizesFromManifest(manifest);
+}
+function getPageSizesFromManifest(manifest) {
+    return Object.entries(manifest.pages).map(function (_a) {
         var page = _a[0], files = _a[1];
         var size = files
             .map(function (filename) {
@@ -15265,7 +15256,6 @@ function getDynamicBundleSizes() {
             .reduce(function (s, b) { return s + b; }, 0);
         return { page: page, size: size };
     });
-    return pageSizes;
 }
 function loadBuildManifest() {
     var file = external_fs_default().readFileSync(external_path_default().join(process.cwd(), '.next', 'build-manifest.json'), 'utf-8');
