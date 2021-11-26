@@ -48,7 +48,7 @@ export function getMarkdownTable(
   if (significant.length > 0) {
     return formatTable(significant);
   }
-  return 'No files significant changes found.';
+  return 'No significant changes found.';
 }
 
 type PageChangeInfo = {

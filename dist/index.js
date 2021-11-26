@@ -15261,7 +15261,7 @@ function getMarkdownTable(masterBundleSizes, bundleSizes) {
     if (significant.length > 0) {
         return formatTable(significant);
     }
-    return 'No files significant changes found.';
+    return 'No significant changes found.';
 }
 function getPageChangeInfo(masterBundleSizes, bundleSizes) {
     var addedAndChanged = bundleSizes.map(function (_a) {
