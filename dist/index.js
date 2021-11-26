@@ -15291,7 +15291,7 @@ function getPageChangeInfo(masterBundleSizes, bundleSizes) {
 function getSignificant(rows) {
     return rows.filter(function (_a) {
         var type = _a.type, diff = _a.diff;
-        return type !== 'changed' || diff > 100 || diff < 100;
+        return type !== 'changed' || diff > 100 || diff < -100;
     });
 }
 function formatTable(rows) {
