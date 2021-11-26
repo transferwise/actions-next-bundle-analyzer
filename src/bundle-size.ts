@@ -86,7 +86,7 @@ function getPageChangeInfo(
 
 function getSignificant(rows: PageChangeInfo[]): PageChangeInfo[] {
   return rows.filter(
-    ({ type, diff }) => type !== 'changed' || diff > 100 || diff < -100
+    ({ type, diff }) => type !== 'changed' || diff >= 1000 || diff <= -1000
   );
 }
 
