@@ -15256,24 +15256,51 @@ function loadManifest() {
 }
 function getMarkdownTable(masterBundleSizes, bundleSizes) {
     // Produce a Markdown table with each page, its size and difference to master
-    var sizes = bundleSizes
-        .map(function (_a) {
+    var rows = getPageChangeInfo(masterBundleSizes, bundleSizes);
+    var significant = getSignificant(rows);
+    if (significant.length > 0) {
+        return formatTable(significant);
+    }
+    return 'No files significant changes found.';
+}
+function getPageChangeInfo(masterBundleSizes, bundleSizes) {
+    var addedAndChanged = bundleSizes.map(function (_a) {
         var page = _a.page, size = _a.size;
         var masterSize = masterBundleSizes.find(function (x) { return x.page === page; });
-        var diffStr = masterSize ? formatBytes(size - masterSize.size, true) : 'added';
-        return "| `" + page + "` | " + formatBytes(size) + " | " + diffStr + " |";
-    })
-        .concat(masterBundleSizes
+        if (masterSize) {
+            return {
+                page: page,
+                type: 'changed',
+                size: size,
+                diff: size - masterSize.size,
+            };
+        }
+        return { page: page, type: 'added', size: size, diff: size };
+    });
+    var removed = masterBundleSizes
         .filter(function (_a) {
         var page = _a.page;
         return !bundleSizes.find(function (x) { return x.page === page; });
     })
         .map(function (_a) {
         var page = _a.page;
-        return "| `" + page + "` | removed |";
-    }))
-        .join('\n');
-    return "| Route | Size (gzipped) | Diff |\n  | --- | --- | --- |\n  " + sizes;
+        return ({ page: page, type: 'removed', size: 0, diff: 0 });
+    });
+    return addedAndChanged.concat(removed);
+}
+function getSignificant(rows) {
+    return rows.filter(function (_a) {
+        var type = _a.type, diff = _a.diff;
+        return type !== 'changed' || diff > 100 || diff < 100;
+    });
+}
+function formatTable(rows) {
+    var rowStrs = rows.map(function (_a) {
+        var page = _a.page, type = _a.type, size = _a.size, diff = _a.diff;
+        var diffStr = type === 'changed' ? formatBytes(diff, true) : type;
+        return "| `" + page + "` | " + formatBytes(size) + " | " + diffStr + " |";
+    });
+    return "| Route | Size (gzipped) | Diff |\n  | --- | --- | --- |\n  " + rowStrs.join('\n');
 }
 function formatBytes(bytes, signed) {
     if (signed === void 0) { signed = false; }
