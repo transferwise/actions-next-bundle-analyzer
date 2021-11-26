@@ -1,7 +1,8 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
 import {
-  getBundleSizes,
+  getStaticBundleSizes,
+  getDynamicBundleSizes,
   getMarkdownTable,
   PageBundleSizes,
 } from './bundle-size';
@@ -12,6 +13,7 @@ import { uploadJsonAsArtifact } from './upload-artifacts';
 
 const ARTIFACT_NAME = 'next-bundle-analyzer';
 const FILE_NAME = 'bundle-sizes.json';
+const DYNAMIC_FILE_NAME = 'dynamic-bundle-sizes.json';
 
 async function run() {
   try {
@@ -30,23 +32,49 @@ async function run() {
       FILE_NAME
     )) || { sha: 'none', data: [] };
     console.log(masterBundleSizes);
+    const masterDynamicBundleSizes = (await downloadArtifactAsJson(
+      octokit,
+      baseBranch,
+      workflowId,
+      ARTIFACT_NAME,
+      DYNAMIC_FILE_NAME
+    )) || { sha: 'none', data: [] };
+    console.log(masterDynamicBundleSizes);
 
     console.log('> Calculating local bundle sizes');
-    const bundleSizes = getBundleSizes();
+    const bundleSizes = getStaticBundleSizes();
     console.log(bundleSizes);
+    const dynamicBundleSizes = getDynamicBundleSizes();
+    console.log(dynamicBundleSizes);
 
     console.log('> Uploading local bundle sizes');
     await uploadJsonAsArtifact(ARTIFACT_NAME, FILE_NAME, bundleSizes);
+    await uploadJsonAsArtifact(
+      ARTIFACT_NAME,
+      DYNAMIC_FILE_NAME,
+      dynamicBundleSizes
+    );
 
     console.log('> Commenting on PR');
     if (issueNumber) {
       const prefix = '### Bundle Sizes';
       const info = `Compared against ${masterBundleSizes.sha}`;
-      const markdownTable = getMarkdownTable(
+
+      const routesTable = getMarkdownTable(
         masterBundleSizes.data,
-        bundleSizes
+        bundleSizes,
+        'Route'
       );
-      const body = `${prefix}\n\n${info}\n\n${markdownTable}`;
+      const dynamicTable = getMarkdownTable(
+        masterDynamicBundleSizes.data,
+        dynamicBundleSizes,
+        'Dynamic import'
+      );
+      const body =
+        `${prefix}\n\n` +
+        `${info}\n\n` +
+        `${routesTable}\n\n` +
+        `${dynamicTable}\n\n`;
       createOrReplaceComment(octokit, issueNumber, prefix, body);
     }
   } catch (e) {

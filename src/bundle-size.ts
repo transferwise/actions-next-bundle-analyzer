@@ -6,12 +6,25 @@ type BuildManifest = {
   pages: Record<string, string[]>;
 };
 
+type ReactLoadableManifest = Record<string, { id: string; file: string }[]>;
+
 export type PageBundleSizes = { page: string; size: number }[];
 
-export function getBundleSizes(): PageBundleSizes {
-  const manifest = loadManifest();
+export function getStaticBundleSizes(): PageBundleSizes {
+  const manifest = loadBuildManifest();
 
-  const pageSizes: PageBundleSizes = Object.entries(manifest.pages).map(([page, files]) => {
+  return getPageSizesFromManifest(manifest);
+}
+
+export function getDynamicBundleSizes(): PageBundleSizes {
+  const staticManifest = loadBuildManifest();
+  const manifest = loadReactLoadableManifest(staticManifest.pages['/_app']);
+
+  return getPageSizesFromManifest(manifest);
+}
+
+function getPageSizesFromManifest(manifest: BuildManifest): PageBundleSizes {
+  return Object.entries(manifest.pages).map(([page, files]) => {
     const size = files
       .map((filename: string) => {
         const fn = path.join(process.cwd(), '.next', filename);
@@ -23,27 +36,48 @@ export function getBundleSizes(): PageBundleSizes {
 
     return { page, size };
   });
-
-  return pageSizes;
 }
 
-function loadManifest(): BuildManifest {
+function loadBuildManifest(): BuildManifest {
   const file = fs.readFileSync(path.join(process.cwd(), '.next', 'build-manifest.json'), 'utf-8');
   return JSON.parse(file);
 }
 
+function loadReactLoadableManifest(appChunks: string[]): BuildManifest {
+  const file = fs.readFileSync(
+    path.join(process.cwd(), '.next', 'react-loadable-manifest.json'),
+    'utf-8',
+  );
+  const content = JSON.parse(file) as ReactLoadableManifest;
+  const pages = {} as BuildManifest['pages'];
+  Object.keys(content).map((item) => {
+    const fileList = content[item].map(({ file }) => file);
+    const uniqueFileList = Array.from(new Set(fileList));
+    pages[item] = uniqueFileList.filter(
+      (file) => !appChunks.find((chunkFile) => file === chunkFile),
+    );
+  });
+  return {
+    pages,
+  };
+}
+
 export function getMarkdownTable(
-  masterBundleSizes: PageBundleSizes,
+  masterBundleSizes: PageBundleSizes = [],
   bundleSizes: PageBundleSizes,
+  name: string = 'Route',
 ): string {
   // Produce a Markdown table with each page, its size and difference to master
   const rows = getPageChangeInfo(masterBundleSizes, bundleSizes);
-  const significant = getSignificant(rows);
-
-  if (significant.length > 0) {
-    return formatTable(significant);
+  if (rows.length === 0) {
+    return `${name}: None found.`;
   }
-  return 'No significant changes found.';
+
+  const significant = getSignificant(rows);
+  if (significant.length > 0) {
+    return formatTable(name, significant);
+  }
+  return `${name}: No significant changes found`;
 }
 
 type PageChangeInfo = {
@@ -81,13 +115,13 @@ function getSignificant(rows: PageChangeInfo[]): PageChangeInfo[] {
   return rows.filter(({ type, diff }) => type !== 'changed' || diff >= 1000 || diff <= -1000);
 }
 
-function formatTable(rows: PageChangeInfo[]): string {
+function formatTable(name: string, rows: PageChangeInfo[]): string {
   const rowStrs = rows.map(({ page, type, size, diff }) => {
     const diffStr = type === 'changed' ? formatBytes(diff, true) : type;
     return `| \`${page}\` | ${formatBytes(size)} | ${diffStr} |`;
   });
 
-  return `| Route | Size (gzipped) | Diff |
+  return `| ${name} | Size (gzipped) | Diff |
   | --- | --- | --- |
   ${rowStrs.join('\n')}`;
 }
