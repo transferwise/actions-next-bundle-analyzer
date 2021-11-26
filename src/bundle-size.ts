@@ -11,35 +11,30 @@ export type PageBundleSizes = { page: string; size: number }[];
 export function getBundleSizes(): PageBundleSizes {
   const manifest = loadManifest();
 
-  const pageSizes: PageBundleSizes = Object.entries(manifest.pages).map(
-    ([page, files]) => {
-      const size = files
-        .map((filename: string) => {
-          const fn = path.join(process.cwd(), '.next', filename);
-          const bytes = fs.readFileSync(fn);
-          const gzipped = zlib.gzipSync(bytes);
-          return gzipped.byteLength;
-        })
-        .reduce((s: number, b: number) => s + b, 0);
+  const pageSizes: PageBundleSizes = Object.entries(manifest.pages).map(([page, files]) => {
+    const size = files
+      .map((filename: string) => {
+        const fn = path.join(process.cwd(), '.next', filename);
+        const bytes = fs.readFileSync(fn);
+        const gzipped = zlib.gzipSync(bytes);
+        return gzipped.byteLength;
+      })
+      .reduce((s: number, b: number) => s + b, 0);
 
-      return { page, size };
-    }
-  );
+    return { page, size };
+  });
 
   return pageSizes;
 }
 
 function loadManifest(): BuildManifest {
-  const file = fs.readFileSync(
-    path.join(process.cwd(), '.next', 'build-manifest.json'),
-    'utf-8'
-  );
+  const file = fs.readFileSync(path.join(process.cwd(), '.next', 'build-manifest.json'), 'utf-8');
   return JSON.parse(file);
 }
 
 export function getMarkdownTable(
   masterBundleSizes: PageBundleSizes,
-  bundleSizes: PageBundleSizes
+  bundleSizes: PageBundleSizes,
 ): string {
   // Produce a Markdown table with each page, its size and difference to master
   const rows = getPageChangeInfo(masterBundleSizes, bundleSizes);
@@ -60,22 +55,20 @@ type PageChangeInfo = {
 
 function getPageChangeInfo(
   masterBundleSizes: PageBundleSizes,
-  bundleSizes: PageBundleSizes
+  bundleSizes: PageBundleSizes,
 ): PageChangeInfo[] {
-  const addedAndChanged: PageChangeInfo[] = bundleSizes.map(
-    ({ page, size }) => {
-      const masterSize = masterBundleSizes.find((x) => x.page === page);
-      if (masterSize) {
-        return {
-          page,
-          type: 'changed',
-          size,
-          diff: size - masterSize.size,
-        };
-      }
-      return { page, type: 'added', size, diff: size };
+  const addedAndChanged: PageChangeInfo[] = bundleSizes.map(({ page, size }) => {
+    const masterSize = masterBundleSizes.find((x) => x.page === page);
+    if (masterSize) {
+      return {
+        page,
+        type: 'changed',
+        size,
+        diff: size - masterSize.size,
+      };
     }
-  );
+    return { page, type: 'added', size, diff: size };
+  });
 
   const removed: PageChangeInfo[] = masterBundleSizes
     .filter(({ page }) => !bundleSizes.find((x) => x.page === page))
@@ -85,9 +78,7 @@ function getPageChangeInfo(
 }
 
 function getSignificant(rows: PageChangeInfo[]): PageChangeInfo[] {
-  return rows.filter(
-    ({ type, diff }) => type !== 'changed' || diff >= 1000 || diff <= -1000
-  );
+  return rows.filter(({ type, diff }) => type !== 'changed' || diff >= 1000 || diff <= -1000);
 }
 
 function formatTable(rows: PageChangeInfo[]): string {
@@ -113,9 +104,7 @@ function formatBytes(bytes: number, signed = false) {
 
   const i = Math.floor(Math.log(Math.abs(bytes)) / Math.log(k));
 
-  return `${sign}${parseFloat(Math.abs(bytes / k ** i).toFixed(dm))} ${
-    sizes[i]
-  }`;
+  return `${sign}${parseFloat(Math.abs(bytes / k ** i).toFixed(dm))} ${sizes[i]}`;
 }
 
 function getSign(bytes: number) {
