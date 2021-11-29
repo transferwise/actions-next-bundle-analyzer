@@ -37,22 +37,59 @@ export function getMarkdownTable(
   bundleSizes: PageBundleSizes,
 ): string {
   // Produce a Markdown table with each page, its size and difference to master
-  const sizes = bundleSizes
-    .map(({ page, size }) => {
-      const masterSize = masterBundleSizes.find((x) => x.page === page);
-      const diffStr = masterSize ? formatBytes(size - masterSize.size, true) : 'added';
-      return `| \`${page}\` | ${formatBytes(size)} | ${diffStr} |`;
-    })
-    .concat(
-      masterBundleSizes
-        .filter(({ page }) => !bundleSizes.find((x) => x.page === page))
-        .map(({ page }) => `| \`${page}\` | removed |`),
-    )
-    .join('\n');
+  const rows = getPageChangeInfo(masterBundleSizes, bundleSizes);
+  const significant = getSignificant(rows);
+
+  if (significant.length > 0) {
+    return formatTable(significant);
+  }
+  return 'No significant changes found.';
+}
+
+type PageChangeInfo = {
+  page: string;
+  type: 'added' | 'changed' | 'removed';
+  size: number;
+  diff: number;
+};
+
+function getPageChangeInfo(
+  masterBundleSizes: PageBundleSizes,
+  bundleSizes: PageBundleSizes,
+): PageChangeInfo[] {
+  const addedAndChanged: PageChangeInfo[] = bundleSizes.map(({ page, size }) => {
+    const masterSize = masterBundleSizes.find((x) => x.page === page);
+    if (masterSize) {
+      return {
+        page,
+        type: 'changed',
+        size,
+        diff: size - masterSize.size,
+      };
+    }
+    return { page, type: 'added', size, diff: size };
+  });
+
+  const removed: PageChangeInfo[] = masterBundleSizes
+    .filter(({ page }) => !bundleSizes.find((x) => x.page === page))
+    .map(({ page }) => ({ page, type: 'removed', size: 0, diff: 0 }));
+
+  return addedAndChanged.concat(removed);
+}
+
+function getSignificant(rows: PageChangeInfo[]): PageChangeInfo[] {
+  return rows.filter(({ type, diff }) => type !== 'changed' || diff >= 1000 || diff <= -1000);
+}
+
+function formatTable(rows: PageChangeInfo[]): string {
+  const rowStrs = rows.map(({ page, type, size, diff }) => {
+    const diffStr = type === 'changed' ? formatBytes(diff, true) : type;
+    return `| \`${page}\` | ${formatBytes(size)} | ${diffStr} |`;
+  });
 
   return `| Route | Size (gzipped) | Diff |
   | --- | --- | --- |
-  ${sizes}`;
+  ${rowStrs.join('\n')}`;
 }
 
 function formatBytes(bytes: number, signed = false) {
