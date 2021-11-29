@@ -15234,9 +15234,17 @@ var external_zlib_default = /*#__PURE__*/__nccwpck_require__.n(external_zlib_);
 
 
 
-function getBundleSizes() {
-    var manifest = loadManifest();
-    var pageSizes = Object.entries(manifest.pages).map(function (_a) {
+function getStaticBundleSizes() {
+    var manifest = loadBuildManifest();
+    return getPageSizesFromManifest(manifest);
+}
+function getDynamicBundleSizes() {
+    var staticManifest = loadBuildManifest();
+    var manifest = loadReactLoadableManifest(staticManifest.pages['/_app']);
+    return getPageSizesFromManifest(manifest);
+}
+function getPageSizesFromManifest(manifest) {
+    return Object.entries(manifest.pages).map(function (_a) {
         var page = _a[0], files = _a[1];
         var size = files
             .map(function (filename) {
@@ -15248,20 +15256,40 @@ function getBundleSizes() {
             .reduce(function (s, b) { return s + b; }, 0);
         return { page: page, size: size };
     });
-    return pageSizes;
 }
-function loadManifest() {
+function loadBuildManifest() {
     var file = external_fs_default().readFileSync(external_path_default().join(process.cwd(), '.next', 'build-manifest.json'), 'utf-8');
     return JSON.parse(file);
 }
-function getMarkdownTable(masterBundleSizes, bundleSizes) {
+function loadReactLoadableManifest(appChunks) {
+    var file = external_fs_default().readFileSync(external_path_default().join(process.cwd(), '.next', 'react-loadable-manifest.json'), 'utf-8');
+    var content = JSON.parse(file);
+    var pages = {};
+    Object.keys(content).map(function (item) {
+        var fileList = content[item].map(function (_a) {
+            var file = _a.file;
+            return file;
+        });
+        var uniqueFileList = Array.from(new Set(fileList));
+        pages[item] = uniqueFileList.filter(function (file) { return !appChunks.find(function (chunkFile) { return file === chunkFile; }); });
+    });
+    return {
+        pages: pages,
+    };
+}
+function getMarkdownTable(masterBundleSizes, bundleSizes, name) {
+    if (masterBundleSizes === void 0) { masterBundleSizes = []; }
+    if (name === void 0) { name = 'Route'; }
     // Produce a Markdown table with each page, its size and difference to master
     var rows = getPageChangeInfo(masterBundleSizes, bundleSizes);
+    if (rows.length === 0) {
+        return name + ": None found.";
+    }
     var significant = getSignificant(rows);
     if (significant.length > 0) {
-        return formatTable(significant);
+        return formatTable(name, significant);
     }
-    return 'No significant changes found.';
+    return name + ": No significant changes found";
 }
 function getPageChangeInfo(masterBundleSizes, bundleSizes) {
     var addedAndChanged = bundleSizes.map(function (_a) {
@@ -15294,13 +15322,13 @@ function getSignificant(rows) {
         return type !== 'changed' || diff >= 1000 || diff <= -1000;
     });
 }
-function formatTable(rows) {
+function formatTable(name, rows) {
     var rowStrs = rows.map(function (_a) {
         var page = _a.page, type = _a.type, size = _a.size, diff = _a.diff;
         var diffStr = type === 'changed' ? formatBytes(diff, true) : type;
         return "| `" + page + "` | " + formatBytes(size) + " | " + diffStr + " |";
     });
-    return "| Route | Size (gzipped) | Diff |\n  | --- | --- | --- |\n  " + rowStrs.join('\n');
+    return "| " + name + " | Size (gzipped) | Diff |\n  | --- | --- | --- |\n  " + rowStrs.join('\n');
 }
 function formatBytes(bytes, signed) {
     if (signed === void 0) { signed = false; }
@@ -15614,14 +15642,15 @@ var src_generator = (undefined && undefined.__generator) || function (thisArg, b
 
 var ARTIFACT_NAME = 'next-bundle-analyzer';
 var FILE_NAME = 'bundle-sizes.json';
+var DYNAMIC_FILE_NAME = 'dynamic-bundle-sizes.json';
 function run() {
     var _a;
     return src_awaiter(this, void 0, void 0, function () {
-        var workflowId, baseBranch, octokit, issueNumber, masterBundleSizes, bundleSizes, prefix, info, markdownTable, body, e_1;
+        var workflowId, baseBranch, octokit, issueNumber, masterBundleSizes, masterDynamicBundleSizes, bundleSizes, dynamicBundleSizes, prefix, info, routesTable, dynamicTable, body, e_1;
         return src_generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
-                    _b.trys.push([0, 3, , 4]);
+                    _b.trys.push([0, 5, , 6]);
                     workflowId = core.getInput('workflow-id', { required: true });
                     baseBranch = core.getInput('base-branch') || 'master';
                     octokit = github.getOctokit(process.env.GITHUB_TOKEN || '');
@@ -15631,28 +15660,41 @@ function run() {
                 case 1:
                     masterBundleSizes = (_b.sent()) || { sha: 'none', data: [] };
                     console.log(masterBundleSizes);
+                    return [4 /*yield*/, downloadArtifactAsJson(octokit, baseBranch, workflowId, ARTIFACT_NAME, DYNAMIC_FILE_NAME)];
+                case 2:
+                    masterDynamicBundleSizes = (_b.sent()) || { sha: 'none', data: [] };
+                    console.log(masterDynamicBundleSizes);
                     console.log('> Calculating local bundle sizes');
-                    bundleSizes = getBundleSizes();
+                    bundleSizes = getStaticBundleSizes();
                     console.log(bundleSizes);
+                    dynamicBundleSizes = getDynamicBundleSizes();
+                    console.log(dynamicBundleSizes);
                     console.log('> Uploading local bundle sizes');
                     return [4 /*yield*/, uploadJsonAsArtifact(ARTIFACT_NAME, FILE_NAME, bundleSizes)];
-                case 2:
+                case 3:
+                    _b.sent();
+                    return [4 /*yield*/, uploadJsonAsArtifact(ARTIFACT_NAME, DYNAMIC_FILE_NAME, dynamicBundleSizes)];
+                case 4:
                     _b.sent();
                     console.log('> Commenting on PR');
                     if (issueNumber) {
                         prefix = '### Bundle Sizes';
                         info = "Compared against " + masterBundleSizes.sha;
-                        markdownTable = getMarkdownTable(masterBundleSizes.data, bundleSizes);
-                        body = prefix + "\n\n" + info + "\n\n" + markdownTable;
+                        routesTable = getMarkdownTable(masterBundleSizes.data, bundleSizes, 'Route');
+                        dynamicTable = getMarkdownTable(masterDynamicBundleSizes.data, dynamicBundleSizes, 'Dynamic import');
+                        body = prefix + "\n\n" +
+                            (info + "\n\n") +
+                            (routesTable + "\n\n") +
+                            (dynamicTable + "\n\n");
                         createOrReplaceComment(octokit, issueNumber, prefix, body);
                     }
-                    return [3 /*break*/, 4];
-                case 3:
+                    return [3 /*break*/, 6];
+                case 5:
                     e_1 = _b.sent();
                     console.log(e_1);
                     core.setFailed(e_1.message);
-                    return [3 /*break*/, 4];
-                case 4: return [2 /*return*/];
+                    return [3 /*break*/, 6];
+                case 6: return [2 /*return*/];
             }
         });
     });
