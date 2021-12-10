@@ -6,7 +6,9 @@ type BuildManifest = {
   pages: Record<string, string[]>;
 };
 
-type ReactLoadableManifest = Record<string, { id: string; files: string[] }>;
+type ReactLoadableManifest = Record<string, Next10Chunks | Next12Chunks>;
+type Next10Chunks = { id: string; file: string }[];
+type Next12Chunks = { id: string; files: string[] };
 
 export type PageBundleSizes = { page: string; size: number }[];
 
@@ -51,7 +53,7 @@ function loadReactLoadableManifest(appChunks: string[]): BuildManifest {
   const content = JSON.parse(file) as ReactLoadableManifest;
   const pages = {} as BuildManifest['pages'];
   Object.keys(content).map((item) => {
-    const fileList = content[item].files;
+    const fileList = getFiles(content[item]);
     const uniqueFileList = Array.from(new Set(fileList));
     pages[item] = uniqueFileList.filter(
       (file) => !appChunks.find((chunkFile) => file === chunkFile),
@@ -60,6 +62,13 @@ function loadReactLoadableManifest(appChunks: string[]): BuildManifest {
   return {
     pages,
   };
+}
+
+function getFiles(chunks: Next10Chunks | Next12Chunks): string[] {
+  if ((chunks as Next12Chunks).files) {
+    return (chunks as Next12Chunks).files;
+  }
+  return (chunks as Next10Chunks).map(({ file }) => file);
 }
 
 export function getMarkdownTable(

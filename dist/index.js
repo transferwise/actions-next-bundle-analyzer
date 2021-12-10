@@ -15266,13 +15266,22 @@ function loadReactLoadableManifest(appChunks) {
     var content = JSON.parse(file);
     var pages = {};
     Object.keys(content).map(function (item) {
-        var fileList = content[item].files;
+        var fileList = getFiles(content[item]);
         var uniqueFileList = Array.from(new Set(fileList));
         pages[item] = uniqueFileList.filter(function (file) { return !appChunks.find(function (chunkFile) { return file === chunkFile; }); });
     });
     return {
         pages: pages,
     };
+}
+function getFiles(chunks) {
+    if (chunks.files) {
+        return chunks.files;
+    }
+    return chunks.map(function (_a) {
+        var file = _a.file;
+        return file;
+    });
 }
 function getMarkdownTable(masterBundleSizes, bundleSizes, name) {
     if (masterBundleSizes === void 0) { masterBundleSizes = []; }
