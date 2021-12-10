@@ -15266,10 +15266,7 @@ function loadReactLoadableManifest(appChunks) {
     var content = JSON.parse(file);
     var pages = {};
     Object.keys(content).map(function (item) {
-        var fileList = content[item].map(function (_a) {
-            var file = _a.file;
-            return file;
-        });
+        var fileList = content[item].files;
         var uniqueFileList = Array.from(new Set(fileList));
         pages[item] = uniqueFileList.filter(function (file) { return !appChunks.find(function (chunkFile) { return file === chunkFile; }); });
     });

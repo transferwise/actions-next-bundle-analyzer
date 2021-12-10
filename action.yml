@@ -4,7 +4,7 @@ inputs:
     description: 'Workflow ID containing this step'
   base-branch:
     description: 'Base branch of the repo (master or main)'
-    default: master
+    default: support_next_12
 runs:
   using: 'node12'
   main: 'dist/index.js'
