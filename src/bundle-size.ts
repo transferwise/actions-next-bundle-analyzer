@@ -6,7 +6,7 @@ type BuildManifest = {
   pages: Record<string, string[]>;
 };
 
-type ReactLoadableManifest = Record<string, { id: string; file: string }[]>;
+type ReactLoadableManifest = Record<string, { id: string; files: string[] }>;
 
 export type PageBundleSizes = { page: string; size: number }[];
 
@@ -51,7 +51,7 @@ function loadReactLoadableManifest(appChunks: string[]): BuildManifest {
   const content = JSON.parse(file) as ReactLoadableManifest;
   const pages = {} as BuildManifest['pages'];
   Object.keys(content).map((item) => {
-    const fileList = content[item].map(({ file }) => file);
+    const fileList = content[item].files;
     const uniqueFileList = Array.from(new Set(fileList));
     pages[item] = uniqueFileList.filter(
       (file) => !appChunks.find((chunkFile) => file === chunkFile),
