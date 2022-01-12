@@ -15258,9 +15258,6 @@ function getPageSizesFromManifest(manifest, workingDir) {
     });
 }
 function loadBuildManifest(workingDir) {
-    console.log('here');
-    console.log(external_path_default().join(workingDir));
-    console.log(external_path_default().join(process.cwd(), workingDir, '.next', 'build-manifest.json'));
     var file = external_fs_default().readFileSync(external_path_default().join(process.cwd(), workingDir, '.next', 'build-manifest.json'), 'utf-8');
     return JSON.parse(file);
 }
@@ -15663,7 +15660,6 @@ function run() {
                     workflowId = core.getInput('workflow-id', { required: true });
                     baseBranch = core.getInput('base-branch') || 'master';
                     workingDir = core.getInput('working-directory') || '';
-                    console.log(workingDir);
                     octokit = github.getOctokit(process.env.GITHUB_TOKEN || '');
                     issueNumber = (_a = github.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.number;
                     console.log("> Downloading bundle sizes from " + baseBranch);
