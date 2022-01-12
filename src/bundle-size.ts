@@ -12,7 +12,7 @@ type Next12Chunks = { id: string; files: string[] };
 
 export type PageBundleSizes = { page: string; size: number }[];
 
-export function getStaticBundleSizes(workingDir:string): PageBundleSizes {
+export function getStaticBundleSizes(workingDir: string): PageBundleSizes {
   const manifest = loadBuildManifest(workingDir);
 
   return getPageSizesFromManifest(manifest,workingDir);
