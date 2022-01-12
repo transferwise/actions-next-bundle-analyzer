@@ -1,6 +1,6 @@
 {
   "name": "actions-next-bundle-analyzer",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "main": "dist/index.js",
   "author": "Stephen Brandwood <614392+sbrandwoo@users.noreply.github.com>",
   "license": "UNLICENSED",
