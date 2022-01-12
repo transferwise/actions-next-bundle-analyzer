@@ -41,16 +41,16 @@ function getPageSizesFromManifest(manifest: BuildManifest,workingDir: string): P
 }
 
 function loadBuildManifest(workingDir: string): BuildManifest {
-  console.log(workingDir)
-  console.log(path.join(process.cwd(), workingDir, '.next'));
+  console.log('here')
+  console.log(path.join(workingDir))
+  console.log(path.join(process.cwd(), workingDir, '.next', 'build-manifest.json'))
   const file = fs.readFileSync(path.join(process.cwd(), workingDir, '.next', 'build-manifest.json'), 'utf-8');
-  console.log(path.join(process.cwd(), workingDir, '.next'));
   return JSON.parse(file);
 }
 
 function loadReactLoadableManifest(appChunks: string[], workingDir: string): BuildManifest {
   const file = fs.readFileSync(
-    path.join(process.cwd(),workingDir, '.next', 'react-loadable-manifest.json'),
+    path.join(process.cwd(), workingDir, '.next', 'react-loadable-manifest.json'),
     'utf-8',
   );
   const content = JSON.parse(file) as ReactLoadableManifest;
