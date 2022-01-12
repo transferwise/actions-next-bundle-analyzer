@@ -45,7 +45,7 @@ function loadBuildManifest(workingDir: string): BuildManifest {
   return JSON.parse(file);
 }
 
-function loadReactLoadableManifest(appChunks: string[], workingDir:string): BuildManifest {
+function loadReactLoadableManifest(appChunks: string[], workingDir: string): BuildManifest {
   const file = fs.readFileSync(
     path.join(process.cwd(),workingDir, '.next', 'react-loadable-manifest.json'),
     'utf-8',
