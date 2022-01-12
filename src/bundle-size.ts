@@ -41,7 +41,10 @@ function getPageSizesFromManifest(manifest: BuildManifest,workingDir: string): P
 }
 
 function loadBuildManifest(workingDir: string): BuildManifest {
+  console.log(workingDir)
+  console.log(path.join(process.cwd(), workingDir, '.next'));
   const file = fs.readFileSync(path.join(process.cwd(), workingDir, '.next', 'build-manifest.json'), 'utf-8');
+  console.log(path.join(process.cwd(), workingDir, '.next'));
   return JSON.parse(file);
 }
 
