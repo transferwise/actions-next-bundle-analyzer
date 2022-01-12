@@ -20,7 +20,7 @@ async function run() {
     const workflowId = core.getInput('workflow-id', { required: true });
     const baseBranch = core.getInput('base-branch') || 'master';
     const workingDir = core.getInput('working-directory') || '';
-    console.log(workingDir)
+
     const octokit = github.getOctokit(process.env.GITHUB_TOKEN || '');
     const issueNumber = github.context.payload.pull_request?.number;
 
