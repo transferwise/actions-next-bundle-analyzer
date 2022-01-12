@@ -12,24 +12,24 @@ type Next12Chunks = { id: string; files: string[] };
 
 export type PageBundleSizes = { page: string; size: number }[];
 
-export function getStaticBundleSizes(): PageBundleSizes {
-  const manifest = loadBuildManifest();
+export function getStaticBundleSizes(workingDir:string): PageBundleSizes {
+  const manifest = loadBuildManifest(workingDir);
 
-  return getPageSizesFromManifest(manifest);
+  return getPageSizesFromManifest(manifest,workingDir);
 }
 
-export function getDynamicBundleSizes(): PageBundleSizes {
-  const staticManifest = loadBuildManifest();
-  const manifest = loadReactLoadableManifest(staticManifest.pages['/_app']);
+export function getDynamicBundleSizes(workingDir: string): PageBundleSizes {
+  const staticManifest = loadBuildManifest(workingDir);
+  const manifest = loadReactLoadableManifest(staticManifest.pages['/_app'], workingDir);
 
-  return getPageSizesFromManifest(manifest);
+  return getPageSizesFromManifest(manifest, workingDir);
 }
 
-function getPageSizesFromManifest(manifest: BuildManifest): PageBundleSizes {
+function getPageSizesFromManifest(manifest: BuildManifest,workingDir: string): PageBundleSizes {
   return Object.entries(manifest.pages).map(([page, files]) => {
     const size = files
       .map((filename: string) => {
-        const fn = path.join(process.cwd(), '.next', filename);
+        const fn = path.join(process.cwd(), workingDir,'.next', filename);
         const bytes = fs.readFileSync(fn);
         const gzipped = zlib.gzipSync(bytes);
         return gzipped.byteLength;
@@ -40,14 +40,14 @@ function getPageSizesFromManifest(manifest: BuildManifest): PageBundleSizes {
   });
 }
 
-function loadBuildManifest(): BuildManifest {
-  const file = fs.readFileSync(path.join(process.cwd(), '.next', 'build-manifest.json'), 'utf-8');
+function loadBuildManifest(workingDir: string): BuildManifest {
+  const file = fs.readFileSync(path.join(process.cwd(), workingDir, '.next', 'build-manifest.json'), 'utf-8');
   return JSON.parse(file);
 }
 
-function loadReactLoadableManifest(appChunks: string[]): BuildManifest {
+function loadReactLoadableManifest(appChunks: string[], workingDir:string): BuildManifest {
   const file = fs.readFileSync(
-    path.join(process.cwd(), '.next', 'react-loadable-manifest.json'),
+    path.join(process.cwd(),workingDir, '.next', 'react-loadable-manifest.json'),
     'utf-8',
   );
   const content = JSON.parse(file) as ReactLoadableManifest;
