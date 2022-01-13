@@ -19,6 +19,7 @@ async function run() {
   try {
     const workflowId = core.getInput('workflow-id', { required: true });
     const baseBranch = core.getInput('base-branch') || 'master';
+    const workingDir = core.getInput('working-directory') || '';
 
     const octokit = github.getOctokit(process.env.GITHUB_TOKEN || '');
     const issueNumber = github.context.payload.pull_request?.number;
@@ -42,9 +43,9 @@ async function run() {
     console.log(masterDynamicBundleSizes);
 
     console.log('> Calculating local bundle sizes');
-    const bundleSizes = getStaticBundleSizes();
+    const bundleSizes = getStaticBundleSizes(workingDir);
     console.log(bundleSizes);
-    const dynamicBundleSizes = getDynamicBundleSizes();
+    const dynamicBundleSizes = getDynamicBundleSizes(workingDir);
     console.log(dynamicBundleSizes);
 
     console.log('> Uploading local bundle sizes');

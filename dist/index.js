@@ -15234,21 +15234,21 @@ var external_zlib_default = /*#__PURE__*/__nccwpck_require__.n(external_zlib_);
 
 
 
-function getStaticBundleSizes() {
-    var manifest = loadBuildManifest();
-    return getPageSizesFromManifest(manifest);
+function getStaticBundleSizes(workingDir) {
+    var manifest = loadBuildManifest(workingDir);
+    return getPageSizesFromManifest(manifest, workingDir);
 }
-function getDynamicBundleSizes() {
-    var staticManifest = loadBuildManifest();
-    var manifest = loadReactLoadableManifest(staticManifest.pages['/_app']);
-    return getPageSizesFromManifest(manifest);
+function getDynamicBundleSizes(workingDir) {
+    var staticManifest = loadBuildManifest(workingDir);
+    var manifest = loadReactLoadableManifest(staticManifest.pages['/_app'], workingDir);
+    return getPageSizesFromManifest(manifest, workingDir);
 }
-function getPageSizesFromManifest(manifest) {
+function getPageSizesFromManifest(manifest, workingDir) {
     return Object.entries(manifest.pages).map(function (_a) {
         var page = _a[0], files = _a[1];
         var size = files
             .map(function (filename) {
-            var fn = external_path_default().join(process.cwd(), '.next', filename);
+            var fn = external_path_default().join(process.cwd(), workingDir, '.next', filename);
             var bytes = external_fs_default().readFileSync(fn);
             var gzipped = external_zlib_default().gzipSync(bytes);
             return gzipped.byteLength;
@@ -15257,12 +15257,12 @@ function getPageSizesFromManifest(manifest) {
         return { page: page, size: size };
     });
 }
-function loadBuildManifest() {
-    var file = external_fs_default().readFileSync(external_path_default().join(process.cwd(), '.next', 'build-manifest.json'), 'utf-8');
+function loadBuildManifest(workingDir) {
+    var file = external_fs_default().readFileSync(external_path_default().join(process.cwd(), workingDir, '.next', 'build-manifest.json'), 'utf-8');
     return JSON.parse(file);
 }
-function loadReactLoadableManifest(appChunks) {
-    var file = external_fs_default().readFileSync(external_path_default().join(process.cwd(), '.next', 'react-loadable-manifest.json'), 'utf-8');
+function loadReactLoadableManifest(appChunks, workingDir) {
+    var file = external_fs_default().readFileSync(external_path_default().join(process.cwd(), workingDir, '.next', 'react-loadable-manifest.json'), 'utf-8');
     var content = JSON.parse(file);
     var pages = {};
     Object.keys(content).map(function (item) {
@@ -15652,13 +15652,14 @@ var DYNAMIC_FILE_NAME = 'dynamic-bundle-sizes.json';
 function run() {
     var _a;
     return src_awaiter(this, void 0, void 0, function () {
-        var workflowId, baseBranch, octokit, issueNumber, masterBundleSizes, masterDynamicBundleSizes, bundleSizes, dynamicBundleSizes, prefix, info, routesTable, dynamicTable, body, e_1;
+        var workflowId, baseBranch, workingDir, octokit, issueNumber, masterBundleSizes, masterDynamicBundleSizes, bundleSizes, dynamicBundleSizes, prefix, info, routesTable, dynamicTable, body, e_1;
         return src_generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
                     _b.trys.push([0, 5, , 6]);
                     workflowId = core.getInput('workflow-id', { required: true });
                     baseBranch = core.getInput('base-branch') || 'master';
+                    workingDir = core.getInput('working-directory') || '';
                     octokit = github.getOctokit(process.env.GITHUB_TOKEN || '');
                     issueNumber = (_a = github.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.number;
                     console.log("> Downloading bundle sizes from " + baseBranch);
@@ -15671,9 +15672,9 @@ function run() {
                     masterDynamicBundleSizes = (_b.sent()) || { sha: 'none', data: [] };
                     console.log(masterDynamicBundleSizes);
                     console.log('> Calculating local bundle sizes');
-                    bundleSizes = getStaticBundleSizes();
+                    bundleSizes = getStaticBundleSizes(workingDir);
                     console.log(bundleSizes);
-                    dynamicBundleSizes = getDynamicBundleSizes();
+                    dynamicBundleSizes = getDynamicBundleSizes(workingDir);
                     console.log(dynamicBundleSizes);
                     console.log('> Uploading local bundle sizes');
                     return [4 /*yield*/, uploadJsonAsArtifact(ARTIFACT_NAME, FILE_NAME, bundleSizes)];

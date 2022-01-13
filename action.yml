@@ -5,6 +5,9 @@ inputs:
   base-branch:
     description: 'Base branch of the repo (master or main)'
     default: master
+  working-directory:
+    description: 'Directory containing built files'
+    default: ''
 runs:
   using: 'node12'
   main: 'dist/index.js'
