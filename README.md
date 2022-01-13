@@ -15,7 +15,7 @@ Add the following step to a workflow which runs on a [pull_request](https://docs
     # Optional, defaults to master
     base-branch: master
      # Optional, specifies where to look for .next folder. Default to cwd.
-    working-dir: /packages/my-package
+    working-directory: /packages/my-package
   env:
     # This secret is automatically injected by GitHub
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
