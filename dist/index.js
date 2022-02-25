@@ -15283,16 +15283,16 @@ function getFiles(chunks) {
         return file;
     });
 }
-function getMarkdownTable(masterBundleSizes, bundleSizes, name, diff) {
+function getMarkdownTable(masterBundleSizes, bundleSizes, name) {
     if (masterBundleSizes === void 0) { masterBundleSizes = []; }
     if (name === void 0) { name = 'Route'; }
-    if (diff === void 0) { diff = true; }
     // Produce a Markdown table with each page, its size and difference to master
     var rows = getPageChangeInfo(masterBundleSizes, bundleSizes);
     if (rows.length === 0) {
         return name + ": None found.";
     }
-    if (!diff) {
+    // No diff if master bundle sizes is empty
+    if (masterBundleSizes.length === 0) {
         return formatTableNoDiff(name, rows);
     }
     var significant = getSignificant(rows);
@@ -15496,9 +15496,7 @@ function createCurrentBundleSizeIssue(octokit, body) {
         var issues, existing, issue_number, response, response;
         return current_bundle_size_issue_generator(this, function (_a) {
             switch (_a.label) {
-                case 0:
-                    console.log("Creating or updating issue " + ISSUE_TITLE + " to show latest bundle sizes");
-                    return [4 /*yield*/, octokit.rest.issues.listForRepo(github.context.repo)];
+                case 0: return [4 /*yield*/, octokit.rest.issues.listForRepo(github.context.repo)];
                 case 1:
                     issues = (_a.sent()).data;
                     existing = issues.find(function (issue) { return issue.title === ISSUE_TITLE; });
@@ -15777,8 +15775,8 @@ function run() {
                     return [4 /*yield*/, uploadJsonAsArtifact(ARTIFACT_NAME, DYNAMIC_FILE_NAME, dynamicBundleSizes)];
                 case 4:
                     _b.sent();
-                    console.log('> Commenting on PR');
                     if (issueNumber) {
+                        console.log('> Commenting on PR');
                         prefix = '### Bundle Sizes';
                         info = "Compared against " + masterBundleSizes.sha;
                         routesTable = getMarkdownTable(masterBundleSizes.data, bundleSizes, 'Route');
@@ -15788,10 +15786,12 @@ function run() {
                             (routesTable + "\n\n") +
                             (dynamicTable + "\n\n");
                         createOrReplaceComment(octokit, issueNumber, prefix, body);
-                        routesTableNoDiff = getMarkdownTable(masterBundleSizes.data, bundleSizes, 'Route', false);
-                        dynamicTableNoDiff = getMarkdownTable(masterDynamicBundleSizes.data, dynamicBundleSizes, 'Dynamic import', false);
-                        bodyNoDiff = prefix + "\n\n" +
-                            (routesTableNoDiff + "\n\n") +
+                    }
+                    else {
+                        console.log('> Creating/updating bundle size issue');
+                        routesTableNoDiff = getMarkdownTable([], bundleSizes, 'Route');
+                        dynamicTableNoDiff = getMarkdownTable([], dynamicBundleSizes, 'Dynamic import');
+                        bodyNoDiff = routesTableNoDiff + "\n\n" +
                             (dynamicTableNoDiff + "\n\n");
                         createCurrentBundleSizeIssue(octokit, bodyNoDiff);
                     }

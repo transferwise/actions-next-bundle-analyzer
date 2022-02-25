@@ -57,8 +57,8 @@ async function run() {
       dynamicBundleSizes
     );
 
-    console.log('> Commenting on PR');
     if (issueNumber) {
+      console.log('> Commenting on PR');
       const prefix = '### Bundle Sizes';
       const info = `Compared against ${masterBundleSizes.sha}`;
 
@@ -78,22 +78,20 @@ async function run() {
         `${routesTable}\n\n` +
         `${dynamicTable}\n\n`;
       createOrReplaceComment(octokit, issueNumber, prefix, body);
+    } else {
+      console.log('> Creating/updating bundle size issue');
 
-      // Update bundle size issue
       const routesTableNoDiff = getMarkdownTable(
-        masterBundleSizes.data,
+        [],
         bundleSizes,
-        'Route',
-        false
+        'Route'
       );
       const dynamicTableNoDiff = getMarkdownTable(
-        masterDynamicBundleSizes.data,
+        [],
         dynamicBundleSizes,
-        'Dynamic import',
-        false
+        'Dynamic import'
       );
       const bodyNoDiff =
-        `${prefix}\n\n` +
         `${routesTableNoDiff}\n\n` +
         `${dynamicTableNoDiff}\n\n`;
       createCurrentBundleSizeIssue(octokit, bodyNoDiff);

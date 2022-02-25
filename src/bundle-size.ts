@@ -75,7 +75,6 @@ export function getMarkdownTable(
   masterBundleSizes: PageBundleSizes = [],
   bundleSizes: PageBundleSizes,
   name: string = 'Route',
-  diff: boolean = true
 ): string {
   // Produce a Markdown table with each page, its size and difference to master
   const rows = getPageChangeInfo(masterBundleSizes, bundleSizes);
@@ -83,7 +82,8 @@ export function getMarkdownTable(
     return `${name}: None found.`;
   }
 
-  if (!diff) {
+  // No diff if master bundle sizes is empty
+  if (masterBundleSizes.length === 0) {
     return formatTableNoDiff(name, rows);
   }
 
