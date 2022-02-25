@@ -15787,7 +15787,7 @@ function run() {
                             (dynamicTable + "\n\n");
                         createOrReplaceComment(octokit, issueNumber, prefix, body);
                     }
-                    else {
+                    else if (github.context.ref === "refs/heads/" + baseBranch) {
                         console.log('> Creating/updating bundle size issue');
                         routesTableNoDiff = getMarkdownTable([], bundleSizes, 'Route');
                         dynamicTableNoDiff = getMarkdownTable([], dynamicBundleSizes, 'Dynamic import');

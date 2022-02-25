@@ -78,7 +78,7 @@ async function run() {
         `${routesTable}\n\n` +
         `${dynamicTable}\n\n`;
       createOrReplaceComment(octokit, issueNumber, prefix, body);
-    } else {
+    } else if (github.context.ref === `refs/heads/${baseBranch}`) {
       console.log('> Creating/updating bundle size issue');
 
       const routesTableNoDiff = getMarkdownTable(
