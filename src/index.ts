@@ -7,6 +7,7 @@ import {
   PageBundleSizes,
 } from './bundle-size';
 
+import { createBundleOutputFile } from './bundle-output-file';
 import { createOrReplaceComment } from './comments';
 import { downloadArtifactAsJson } from './download-artifacts';
 import { uploadJsonAsArtifact } from './upload-artifacts';
@@ -77,6 +78,7 @@ async function run() {
         `${routesTable}\n\n` +
         `${dynamicTable}\n\n`;
       createOrReplaceComment(octokit, issueNumber, prefix, body);
+      createBundleOutputFile(octokit, body)
     }
   } catch (e) {
     console.log(e);
