@@ -5,6 +5,7 @@ import type { Octokit } from './types';
 
 export async function createBundleOutputFile(
   octokit: Octokit,
+  issueNumber: number,
   body: string,
 ): Promise<void> {
   console.log('Updating OUTPUT.md file with latest bundle sizes');
@@ -14,6 +15,7 @@ export async function createBundleOutputFile(
     path: "OUTPUT.md",
     content,
     message: "docs: updating OUTPUT.md with latest bundle sizes",
+    issue_number: issueNumber
   });
   console.log(`Done with status ${response.status}`);
 }

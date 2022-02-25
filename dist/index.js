@@ -15700,7 +15700,7 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
 };
 
 
-function createBundleOutputFile(octokit, body) {
+function createBundleOutputFile(octokit, issueNumber, body) {
     return __awaiter(this, void 0, void 0, function () {
         var content, response;
         return __generator(this, function (_a) {
@@ -15708,7 +15708,7 @@ function createBundleOutputFile(octokit, body) {
                 case 0:
                     console.log('Updating OUTPUT.md file with latest bundle sizes');
                     content = gBase64.encode(body);
-                    return [4 /*yield*/, octokit.rest.repos.createOrUpdateFileContents(__assign(__assign({}, github.context.repo), { path: "OUTPUT.md", content: content, message: "docs: updating OUTPUT.md with latest bundle sizes" }))];
+                    return [4 /*yield*/, octokit.rest.repos.createOrUpdateFileContents(__assign(__assign({}, github.context.repo), { path: "OUTPUT.md", content: content, message: "docs: updating OUTPUT.md with latest bundle sizes", issue_number: issueNumber }))];
                 case 1:
                     response = _a.sent();
                     console.log("Done with status " + response.status);
@@ -16061,7 +16061,7 @@ function run() {
                             (routesTable + "\n\n") +
                             (dynamicTable + "\n\n");
                         createOrReplaceComment(octokit, issueNumber, prefix, body);
-                        createBundleOutputFile(octokit, body);
+                        createBundleOutputFile(octokit, issueNumber, body);
                     }
                     return [3 /*break*/, 6];
                 case 5:

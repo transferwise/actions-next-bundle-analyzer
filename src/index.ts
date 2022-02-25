@@ -78,7 +78,7 @@ async function run() {
         `${routesTable}\n\n` +
         `${dynamicTable}\n\n`;
       createOrReplaceComment(octokit, issueNumber, prefix, body);
-      createBundleOutputFile(octokit, body)
+      createBundleOutputFile(octokit, issueNumber, body)
     }
   } catch (e) {
     console.log(e);
