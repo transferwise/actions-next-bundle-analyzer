@@ -21,7 +21,6 @@ async function run() {
     const workflowId = core.getInput('workflow-id', { required: true });
     const baseBranch = core.getInput('base-branch') || 'master';
     const workingDir = core.getInput('working-directory') || '';
-    const bundleSizesIssueNumber = Number(core.getInput('bundle-size-issue-number')) || null;
 
     const octokit = github.getOctokit(process.env.GITHUB_TOKEN || '');
     const issueNumber = github.context.payload.pull_request?.number;
@@ -79,25 +78,25 @@ async function run() {
         `${routesTable}\n\n` +
         `${dynamicTable}\n\n`;
       createOrReplaceComment(octokit, issueNumber, prefix, body);
-      if (bundleSizesIssueNumber) {
-        const routesTableNoDiff = getMarkdownTable(
-          masterBundleSizes.data,
-          bundleSizes,
-          'Route',
-          false
-        );
-        const dynamicTableNoDiff = getMarkdownTable(
-          masterDynamicBundleSizes.data,
-          dynamicBundleSizes,
-          'Dynamic import',
-          false
-        );
-        const bodyNoDiff =
-          `${prefix}\n\n` +
-          `${routesTableNoDiff}\n\n` +
-          `${dynamicTableNoDiff}\n\n`;
-        createCurrentBundleSizeIssue(octokit, bundleSizesIssueNumber, bodyNoDiff);
-      }
+
+      // Update bundle size issue
+      const routesTableNoDiff = getMarkdownTable(
+        masterBundleSizes.data,
+        bundleSizes,
+        'Route',
+        false
+      );
+      const dynamicTableNoDiff = getMarkdownTable(
+        masterDynamicBundleSizes.data,
+        dynamicBundleSizes,
+        'Dynamic import',
+        false
+      );
+      const bodyNoDiff =
+        `${prefix}\n\n` +
+        `${routesTableNoDiff}\n\n` +
+        `${dynamicTableNoDiff}\n\n`;
+      createCurrentBundleSizeIssue(octokit, bodyNoDiff);
     }
   } catch (e) {
     console.log(e);

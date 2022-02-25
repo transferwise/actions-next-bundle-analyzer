@@ -15490,18 +15490,34 @@ var current_bundle_size_issue_generator = (undefined && undefined.__generator) |
     }
 };
 
-function createCurrentBundleSizeIssue(octokit, issueNumber, body) {
+var ISSUE_TITLE = 'Current Bundle Sizes';
+function createCurrentBundleSizeIssue(octokit, body) {
     return current_bundle_size_issue_awaiter(this, void 0, void 0, function () {
-        var response;
+        var issues, existing, issue_number, response, response;
         return current_bundle_size_issue_generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    console.log("Updating issue " + issueNumber + " with latest bundle sizes");
-                    return [4 /*yield*/, octokit.rest.issues.update(current_bundle_size_issue_assign(current_bundle_size_issue_assign({}, github.context.repo), { body: body, issue_number: issueNumber }))];
+                    console.log("Creating or updating issue " + ISSUE_TITLE + " to show latest bundle sizes");
+                    return [4 /*yield*/, octokit.rest.issues.listForRepo(github.context.repo)];
                 case 1:
+                    issues = (_a.sent()).data;
+                    existing = issues.find(function (issue) { return issue.title === ISSUE_TITLE; });
+                    if (!existing) return [3 /*break*/, 3];
+                    issue_number = existing.number;
+                    console.log("Updating issue " + issue_number + " with latest bundle sizes");
+                    return [4 /*yield*/, octokit.rest.issues.update(current_bundle_size_issue_assign(current_bundle_size_issue_assign({}, github.context.repo), { body: body, issue_number: issue_number }))];
+                case 2:
                     response = _a.sent();
-                    console.log("Done with status " + response.status);
-                    return [2 /*return*/];
+                    console.log("Issue updated with status " + response.status);
+                    return [3 /*break*/, 5];
+                case 3:
+                    console.log("Creating issue " + ISSUE_TITLE + " to show latest bundle sizes");
+                    return [4 /*yield*/, octokit.rest.issues.create(current_bundle_size_issue_assign(current_bundle_size_issue_assign({}, github.context.repo), { body: body, title: ISSUE_TITLE }))];
+                case 4:
+                    response = _a.sent();
+                    console.log("Issue created with status " + response.status);
+                    _a.label = 5;
+                case 5: return [2 /*return*/];
             }
         });
     });
@@ -15730,7 +15746,7 @@ var DYNAMIC_FILE_NAME = 'dynamic-bundle-sizes.json';
 function run() {
     var _a;
     return src_awaiter(this, void 0, void 0, function () {
-        var workflowId, baseBranch, workingDir, bundleSizesIssueNumber, octokit, issueNumber, masterBundleSizes, masterDynamicBundleSizes, bundleSizes, dynamicBundleSizes, prefix, info, routesTable, dynamicTable, body, routesTableNoDiff, dynamicTableNoDiff, bodyNoDiff, e_1;
+        var workflowId, baseBranch, workingDir, octokit, issueNumber, masterBundleSizes, masterDynamicBundleSizes, bundleSizes, dynamicBundleSizes, prefix, info, routesTable, dynamicTable, body, routesTableNoDiff, dynamicTableNoDiff, bodyNoDiff, e_1;
         return src_generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
@@ -15738,7 +15754,6 @@ function run() {
                     workflowId = core.getInput('workflow-id', { required: true });
                     baseBranch = core.getInput('base-branch') || 'master';
                     workingDir = core.getInput('working-directory') || '';
-                    bundleSizesIssueNumber = Number(core.getInput('bundle-size-issue-number')) || null;
                     octokit = github.getOctokit(process.env.GITHUB_TOKEN || '');
                     issueNumber = (_a = github.context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.number;
                     console.log("> Downloading bundle sizes from " + baseBranch);
@@ -15773,14 +15788,12 @@ function run() {
                             (routesTable + "\n\n") +
                             (dynamicTable + "\n\n");
                         createOrReplaceComment(octokit, issueNumber, prefix, body);
-                        if (bundleSizesIssueNumber) {
-                            routesTableNoDiff = getMarkdownTable(masterBundleSizes.data, bundleSizes, 'Route', false);
-                            dynamicTableNoDiff = getMarkdownTable(masterDynamicBundleSizes.data, dynamicBundleSizes, 'Dynamic import', false);
-                            bodyNoDiff = prefix + "\n\n" +
-                                (routesTableNoDiff + "\n\n") +
-                                (dynamicTableNoDiff + "\n\n");
-                            createCurrentBundleSizeIssue(octokit, bundleSizesIssueNumber, bodyNoDiff);
-                        }
+                        routesTableNoDiff = getMarkdownTable(masterBundleSizes.data, bundleSizes, 'Route', false);
+                        dynamicTableNoDiff = getMarkdownTable(masterDynamicBundleSizes.data, dynamicBundleSizes, 'Dynamic import', false);
+                        bodyNoDiff = prefix + "\n\n" +
+                            (routesTableNoDiff + "\n\n") +
+                            (dynamicTableNoDiff + "\n\n");
+                        createCurrentBundleSizeIssue(octokit, bodyNoDiff);
                     }
                     return [3 /*break*/, 6];
                 case 5:

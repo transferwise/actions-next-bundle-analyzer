@@ -8,9 +8,6 @@ inputs:
   working-directory:
     description: 'Directory containing built files'
     default: ''
-  bundle-size-issue-number:
-    description: 'The number of the issue displaying current bundle sizes'
-    default: ''
 runs:
   using: 'node12'
   main: 'dist/index.js'
