@@ -80,6 +80,23 @@ async function run() {
         `${dynamicTable}\n\n`;
       createOrReplaceComment(octokit, issueNumber, prefix, body);
       if (bundleSizesIssueNumber) {
+        const routesTableNoDiff = getMarkdownTable(
+          masterBundleSizes.data,
+          bundleSizes,
+          'Route',
+          false
+        );
+        const dynamicTableNoDiff = getMarkdownTable(
+          masterDynamicBundleSizes.data,
+          dynamicBundleSizes,
+          'Dynamic import',
+          false
+        );
+        const body =
+          `${prefix}\n\n` +
+          `${info}\n\n` +
+          `${routesTableNoDiff}\n\n` +
+          `${dynamicTableNoDiff}\n\n`;
         createCurrentBundleSizeIssue(octokit, bundleSizesIssueNumber, body);
       }
     }

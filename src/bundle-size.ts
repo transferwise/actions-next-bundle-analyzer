@@ -75,11 +75,16 @@ export function getMarkdownTable(
   masterBundleSizes: PageBundleSizes = [],
   bundleSizes: PageBundleSizes,
   name: string = 'Route',
+  diff: boolean = true
 ): string {
   // Produce a Markdown table with each page, its size and difference to master
   const rows = getPageChangeInfo(masterBundleSizes, bundleSizes);
   if (rows.length === 0) {
     return `${name}: None found.`;
+  }
+
+  if (!diff) {
+    return formatTableNoDiff(name, rows);
   }
 
   const significant = getSignificant(rows);
@@ -132,6 +137,16 @@ function formatTable(name: string, rows: PageChangeInfo[]): string {
 
   return `| ${name} | Size (gzipped) | Diff |
   | --- | --- | --- |
+  ${rowStrs.join('\n')}`;
+}
+
+function formatTableNoDiff(name: string, rows: PageChangeInfo[]): string {
+  const rowStrs = rows.map(({ page, size }) => {
+    return `| \`${page}\` | ${formatBytes(size)} |`;
+  });
+
+  return `| ${name} | Size (gzipped) |
+  | --- | --- |
   ${rowStrs.join('\n')}`;
 }
 

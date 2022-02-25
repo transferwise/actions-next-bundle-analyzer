@@ -15283,13 +15283,17 @@ function getFiles(chunks) {
         return file;
     });
 }
-function getMarkdownTable(masterBundleSizes, bundleSizes, name) {
+function getMarkdownTable(masterBundleSizes, bundleSizes, name, diff) {
     if (masterBundleSizes === void 0) { masterBundleSizes = []; }
     if (name === void 0) { name = 'Route'; }
+    if (diff === void 0) { diff = true; }
     // Produce a Markdown table with each page, its size and difference to master
     var rows = getPageChangeInfo(masterBundleSizes, bundleSizes);
     if (rows.length === 0) {
         return name + ": None found.";
+    }
+    if (!diff) {
+        return formatTableNoDiff(name, rows);
     }
     var significant = getSignificant(rows);
     if (significant.length > 0) {
@@ -15335,6 +15339,13 @@ function formatTable(name, rows) {
         return "| `" + page + "` | " + formatBytes(size) + " | " + diffStr + " |";
     });
     return "| " + name + " | Size (gzipped) | Diff |\n  | --- | --- | --- |\n  " + rowStrs.join('\n');
+}
+function formatTableNoDiff(name, rows) {
+    var rowStrs = rows.map(function (_a) {
+        var page = _a.page, size = _a.size;
+        return "| `" + page + "` | " + formatBytes(size) + " |";
+    });
+    return "| " + name + " | Size (gzipped) |\n  | --- | --- |\n  " + rowStrs.join('\n');
 }
 function formatBytes(bytes, signed) {
     if (signed === void 0) { signed = false; }
@@ -15719,7 +15730,7 @@ var DYNAMIC_FILE_NAME = 'dynamic-bundle-sizes.json';
 function run() {
     var _a;
     return src_awaiter(this, void 0, void 0, function () {
-        var workflowId, baseBranch, workingDir, bundleSizesIssueNumber, octokit, issueNumber, masterBundleSizes, masterDynamicBundleSizes, bundleSizes, dynamicBundleSizes, prefix, info, routesTable, dynamicTable, body, e_1;
+        var workflowId, baseBranch, workingDir, bundleSizesIssueNumber, octokit, issueNumber, masterBundleSizes, masterDynamicBundleSizes, bundleSizes, dynamicBundleSizes, prefix, info, routesTable, dynamicTable, body, routesTableNoDiff, dynamicTableNoDiff, body_1, e_1;
         return src_generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
@@ -15763,7 +15774,13 @@ function run() {
                             (dynamicTable + "\n\n");
                         createOrReplaceComment(octokit, issueNumber, prefix, body);
                         if (bundleSizesIssueNumber) {
-                            createCurrentBundleSizeIssue(octokit, bundleSizesIssueNumber, body);
+                            routesTableNoDiff = getMarkdownTable(masterBundleSizes.data, bundleSizes, 'Route', false);
+                            dynamicTableNoDiff = getMarkdownTable(masterDynamicBundleSizes.data, dynamicBundleSizes, 'Dynamic import', false);
+                            body_1 = prefix + "\n\n" +
+                                (info + "\n\n") +
+                                (routesTableNoDiff + "\n\n") +
+                                (dynamicTableNoDiff + "\n\n");
+                            createCurrentBundleSizeIssue(octokit, bundleSizesIssueNumber, body_1);
                         }
                     }
                     return [3 /*break*/, 6];
