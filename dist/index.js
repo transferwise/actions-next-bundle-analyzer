@@ -15441,9 +15441,9 @@ function createOrReplaceComment(octokit, issueNumber, searchString, body) {
     });
 }
 
-;// CONCATENATED MODULE: ./src/current-bundle-size-issue.ts
-var current_bundle_size_issue_assign = (undefined && undefined.__assign) || function () {
-    current_bundle_size_issue_assign = Object.assign || function(t) {
+;// CONCATENATED MODULE: ./src/issue.ts
+var issue_assign = (undefined && undefined.__assign) || function () {
+    issue_assign = Object.assign || function(t) {
         for (var s, i = 1, n = arguments.length; i < n; i++) {
             s = arguments[i];
             for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
@@ -15451,9 +15451,9 @@ var current_bundle_size_issue_assign = (undefined && undefined.__assign) || func
         }
         return t;
     };
-    return current_bundle_size_issue_assign.apply(this, arguments);
+    return issue_assign.apply(this, arguments);
 };
-var current_bundle_size_issue_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+var issue_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -15462,7 +15462,7 @@ var current_bundle_size_issue_awaiter = (undefined && undefined.__awaiter) || fu
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var current_bundle_size_issue_generator = (undefined && undefined.__generator) || function (thisArg, body) {
+var issue_generator = (undefined && undefined.__generator) || function (thisArg, body) {
     var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
     return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
     function verb(n) { return function (v) { return step([n, v]); }; }
@@ -15491,10 +15491,10 @@ var current_bundle_size_issue_generator = (undefined && undefined.__generator) |
 };
 
 var ISSUE_TITLE = 'Current Bundle Sizes';
-function createCurrentBundleSizeIssue(octokit, body) {
-    return current_bundle_size_issue_awaiter(this, void 0, void 0, function () {
+function createOrReplaceIssue(octokit, body) {
+    return issue_awaiter(this, void 0, void 0, function () {
         var issues, existing, issue_number, response, response;
-        return current_bundle_size_issue_generator(this, function (_a) {
+        return issue_generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, octokit.rest.issues.listForRepo(github.context.repo)];
                 case 1:
@@ -15503,14 +15503,14 @@ function createCurrentBundleSizeIssue(octokit, body) {
                     if (!existing) return [3 /*break*/, 3];
                     issue_number = existing.number;
                     console.log("Updating issue " + issue_number + " with latest bundle sizes");
-                    return [4 /*yield*/, octokit.rest.issues.update(current_bundle_size_issue_assign(current_bundle_size_issue_assign({}, github.context.repo), { body: body, issue_number: issue_number }))];
+                    return [4 /*yield*/, octokit.rest.issues.update(issue_assign(issue_assign({}, github.context.repo), { body: body, issue_number: issue_number }))];
                 case 2:
                     response = _a.sent();
                     console.log("Issue updated with status " + response.status);
                     return [3 /*break*/, 5];
                 case 3:
                     console.log("Creating issue " + ISSUE_TITLE + " to show latest bundle sizes");
-                    return [4 /*yield*/, octokit.rest.issues.create(current_bundle_size_issue_assign(current_bundle_size_issue_assign({}, github.context.repo), { body: body, title: ISSUE_TITLE }))];
+                    return [4 /*yield*/, octokit.rest.issues.create(issue_assign(issue_assign({}, github.context.repo), { body: body, title: ISSUE_TITLE }))];
                 case 4:
                     response = _a.sent();
                     console.log("Issue created with status " + response.status);
@@ -15793,7 +15793,7 @@ function run() {
                         dynamicTableNoDiff = getMarkdownTable([], dynamicBundleSizes, 'Dynamic import');
                         bodyNoDiff = routesTableNoDiff + "\n\n" +
                             (dynamicTableNoDiff + "\n\n");
-                        createCurrentBundleSizeIssue(octokit, bodyNoDiff);
+                        createOrReplaceIssue(octokit, bodyNoDiff);
                     }
                     return [3 /*break*/, 6];
                 case 5:

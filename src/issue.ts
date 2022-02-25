@@ -4,7 +4,7 @@ import type { Octokit } from './types';
 
 const ISSUE_TITLE = 'Current Bundle Sizes';
 
-export async function createCurrentBundleSizeIssue(
+export async function createOrReplaceIssue(
   octokit: Octokit,
   body: string,
 ): Promise<void> {

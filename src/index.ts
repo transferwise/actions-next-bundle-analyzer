@@ -8,7 +8,7 @@ import {
 } from './bundle-size';
 
 import { createOrReplaceComment } from './comments';
-import { createCurrentBundleSizeIssue } from './current-bundle-size-issue';
+import { createOrReplaceIssue } from './issue';
 import { downloadArtifactAsJson } from './download-artifacts';
 import { uploadJsonAsArtifact } from './upload-artifacts';
 
@@ -94,7 +94,7 @@ async function run() {
       const bodyNoDiff =
         `${routesTableNoDiff}\n\n` +
         `${dynamicTableNoDiff}\n\n`;
-      createCurrentBundleSizeIssue(octokit, bodyNoDiff);
+      createOrReplaceIssue(octokit, bodyNoDiff);
     }
   } catch (e) {
     console.log(e);
