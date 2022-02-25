@@ -92,12 +92,11 @@ async function run() {
           'Dynamic import',
           false
         );
-        const body =
+        const bodyNoDiff =
           `${prefix}\n\n` +
-          `${info}\n\n` +
           `${routesTableNoDiff}\n\n` +
           `${dynamicTableNoDiff}\n\n`;
-        createCurrentBundleSizeIssue(octokit, bundleSizesIssueNumber, body);
+        createCurrentBundleSizeIssue(octokit, bundleSizesIssueNumber, bodyNoDiff);
       }
     }
   } catch (e) {

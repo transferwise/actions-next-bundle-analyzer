@@ -15730,7 +15730,7 @@ var DYNAMIC_FILE_NAME = 'dynamic-bundle-sizes.json';
 function run() {
     var _a;
     return src_awaiter(this, void 0, void 0, function () {
-        var workflowId, baseBranch, workingDir, bundleSizesIssueNumber, octokit, issueNumber, masterBundleSizes, masterDynamicBundleSizes, bundleSizes, dynamicBundleSizes, prefix, info, routesTable, dynamicTable, body, routesTableNoDiff, dynamicTableNoDiff, body_1, e_1;
+        var workflowId, baseBranch, workingDir, bundleSizesIssueNumber, octokit, issueNumber, masterBundleSizes, masterDynamicBundleSizes, bundleSizes, dynamicBundleSizes, prefix, info, routesTable, dynamicTable, body, routesTableNoDiff, dynamicTableNoDiff, bodyNoDiff, e_1;
         return src_generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
@@ -15776,11 +15776,10 @@ function run() {
                         if (bundleSizesIssueNumber) {
                             routesTableNoDiff = getMarkdownTable(masterBundleSizes.data, bundleSizes, 'Route', false);
                             dynamicTableNoDiff = getMarkdownTable(masterDynamicBundleSizes.data, dynamicBundleSizes, 'Dynamic import', false);
-                            body_1 = prefix + "\n\n" +
-                                (info + "\n\n") +
+                            bodyNoDiff = prefix + "\n\n" +
                                 (routesTableNoDiff + "\n\n") +
                                 (dynamicTableNoDiff + "\n\n");
-                            createCurrentBundleSizeIssue(octokit, bundleSizesIssueNumber, body_1);
+                            createCurrentBundleSizeIssue(octokit, bundleSizesIssueNumber, bodyNoDiff);
                         }
                     }
                     return [3 /*break*/, 6];
