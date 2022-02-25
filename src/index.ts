@@ -7,8 +7,8 @@ import {
   PageBundleSizes,
 } from './bundle-size';
 
-import { createBundleOutputFile } from './bundle-output-file';
 import { createOrReplaceComment } from './comments';
+import { createCurrentBundleSizeIssue } from './current-bundle-size-issue';
 import { downloadArtifactAsJson } from './download-artifacts';
 import { uploadJsonAsArtifact } from './upload-artifacts';
 
@@ -21,6 +21,7 @@ async function run() {
     const workflowId = core.getInput('workflow-id', { required: true });
     const baseBranch = core.getInput('base-branch') || 'master';
     const workingDir = core.getInput('working-directory') || '';
+    const bundleSizesIssueNumber = Number(core.getInput('bundle-size-issue-number')) || null;
 
     const octokit = github.getOctokit(process.env.GITHUB_TOKEN || '');
     const issueNumber = github.context.payload.pull_request?.number;
@@ -78,7 +79,9 @@ async function run() {
         `${routesTable}\n\n` +
         `${dynamicTable}\n\n`;
       createOrReplaceComment(octokit, issueNumber, prefix, body);
-      createBundleOutputFile(octokit, issueNumber, body)
+      if (bundleSizesIssueNumber) {
+        createCurrentBundleSizeIssue(octokit, bundleSizesIssueNumber, body);
+      }
     }
   } catch (e) {
     console.log(e);
