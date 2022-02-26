@@ -22,7 +22,7 @@ export async function createOrReplaceIssue(
       issue_number
     });
 
-    console.log(`Issue updated with status ${response.status}`);
+    console.log(`Issue update response status ${response.status}`);
   } else {
     console.log(`Creating issue ${ISSUE_TITLE} to show latest bundle sizes`);
 
@@ -32,6 +32,6 @@ export async function createOrReplaceIssue(
       title: ISSUE_TITLE
     });
 
-    console.log(`Issue created with status ${response.status}`);
+    console.log(`Issue creation response status ${response.status}`);
   }
 }

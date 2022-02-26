@@ -15506,14 +15506,14 @@ function createOrReplaceIssue(octokit, body) {
                     return [4 /*yield*/, octokit.rest.issues.update(issue_assign(issue_assign({}, github.context.repo), { body: body, issue_number: issue_number }))];
                 case 2:
                     response = _a.sent();
-                    console.log("Issue updated with status " + response.status);
+                    console.log("Issue update response status " + response.status);
                     return [3 /*break*/, 5];
                 case 3:
                     console.log("Creating issue " + ISSUE_TITLE + " to show latest bundle sizes");
                     return [4 /*yield*/, octokit.rest.issues.create(issue_assign(issue_assign({}, github.context.repo), { body: body, title: ISSUE_TITLE }))];
                 case 4:
                     response = _a.sent();
-                    console.log("Issue created with status " + response.status);
+                    console.log("Issue creation response status " + response.status);
                     _a.label = 5;
                 case 5: return [2 /*return*/];
             }
