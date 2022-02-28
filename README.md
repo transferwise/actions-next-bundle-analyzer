@@ -21,11 +21,20 @@ Add the following step to a workflow which runs on a [pull_request](https://docs
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
+### On a Pull Request
+
 When the job runs on a pull request a comment will be added showing the bundle sizes of the branch and the difference against master:
 
 ![image](https://user-images.githubusercontent.com/614392/123790589-69872e80-d8d6-11eb-9dec-0686e0bba760.png)
 
 _Note: Difference to master will only be shown once this action has run on a master commit._
+
+### On the base branch
+
+When the workflow runs on the base branch, it will create/update a GitHub Issue with the current bundle sizes.
+
+![image](https://user-images.githubusercontent.com/52004409/156007377-3e6bbb4c-f721-4b42-a363-4559b2ea55df.png)
+
 
 ## Contributing
 
