@@ -8,6 +8,7 @@ import {
 } from './bundle-size';
 
 import { createOrReplaceComment } from './comments';
+import { createOrReplaceIssue } from './issue';
 import { downloadArtifactAsJson } from './download-artifacts';
 import { uploadJsonAsArtifact } from './upload-artifacts';
 
@@ -56,8 +57,8 @@ async function run() {
       dynamicBundleSizes
     );
 
-    console.log('> Commenting on PR');
     if (issueNumber) {
+      console.log('> Commenting on PR');
       const prefix = '### Bundle Sizes';
       const info = `Compared against ${masterBundleSizes.sha}`;
 
@@ -77,6 +78,23 @@ async function run() {
         `${routesTable}\n\n` +
         `${dynamicTable}\n\n`;
       createOrReplaceComment(octokit, issueNumber, prefix, body);
+    } else if (github.context.ref === `refs/heads/${baseBranch}`) {
+      console.log('> Creating/updating bundle size issue');
+
+      const routesTableNoDiff = getMarkdownTable(
+        [],
+        bundleSizes,
+        'Route'
+      );
+      const dynamicTableNoDiff = getMarkdownTable(
+        [],
+        dynamicBundleSizes,
+        'Dynamic import'
+      );
+      const bodyNoDiff =
+        `${routesTableNoDiff}\n\n` +
+        `${dynamicTableNoDiff}\n\n`;
+      createOrReplaceIssue(octokit, bodyNoDiff);
     }
   } catch (e) {
     console.log(e);

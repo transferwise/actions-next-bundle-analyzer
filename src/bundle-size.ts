@@ -82,6 +82,11 @@ export function getMarkdownTable(
     return `${name}: None found.`;
   }
 
+  // No diff if master bundle sizes is empty
+  if (masterBundleSizes.length === 0) {
+    return formatTableNoDiff(name, rows);
+  }
+
   const significant = getSignificant(rows);
   if (significant.length > 0) {
     return formatTable(name, significant);
@@ -132,6 +137,16 @@ function formatTable(name: string, rows: PageChangeInfo[]): string {
 
   return `| ${name} | Size (gzipped) | Diff |
   | --- | --- | --- |
+  ${rowStrs.join('\n')}`;
+}
+
+function formatTableNoDiff(name: string, rows: PageChangeInfo[]): string {
+  const rowStrs = rows.map(({ page, size }) => {
+    return `| \`${page}\` | ${formatBytes(size)} |`;
+  });
+
+  return `| ${name} | Size (gzipped) |
+  | --- | --- |
   ${rowStrs.join('\n')}`;
 }
 
