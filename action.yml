@@ -9,5 +9,5 @@ inputs:
     description: 'Directory containing built files'
     default: ''
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'dist/index.js'
