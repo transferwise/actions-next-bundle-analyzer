@@ -1,11 +1,6 @@
 import * as core from '@actions/core';
 import * as github from '@actions/github';
-import {
-  getStaticBundleSizes,
-  getDynamicBundleSizes,
-  getMarkdownTable,
-  PageBundleSizes,
-} from './bundle-size';
+import { getStaticBundleSizes, getDynamicBundleSizes, getMarkdownTable } from './bundle-size';
 
 import { createOrReplaceComment } from './comments';
 import { createOrReplaceIssue } from './issue';
@@ -31,7 +26,7 @@ async function run() {
       baseBranch,
       workflowId,
       ARTIFACT_NAME,
-      FILE_NAME
+      FILE_NAME,
     )) || { sha: 'none', data: [] };
     console.log(masterBundleSizes);
     const masterDynamicBundleSizes = (await downloadArtifactAsJson(
@@ -39,7 +34,7 @@ async function run() {
       baseBranch,
       workflowId,
       ARTIFACT_NAME,
-      DYNAMIC_FILE_NAME
+      DYNAMIC_FILE_NAME,
     )) || { sha: 'none', data: [] };
     console.log(masterDynamicBundleSizes);
 
@@ -51,54 +46,32 @@ async function run() {
 
     console.log('> Uploading local bundle sizes');
     await uploadJsonAsArtifact(ARTIFACT_NAME, FILE_NAME, bundleSizes);
-    await uploadJsonAsArtifact(
-      ARTIFACT_NAME,
-      DYNAMIC_FILE_NAME,
-      dynamicBundleSizes
-    );
+    await uploadJsonAsArtifact(ARTIFACT_NAME, DYNAMIC_FILE_NAME, dynamicBundleSizes);
 
     if (issueNumber) {
       console.log('> Commenting on PR');
       const prefix = '### Bundle Sizes';
       const info = `Compared against ${masterBundleSizes.sha}`;
 
-      const routesTable = getMarkdownTable(
-        masterBundleSizes.data,
-        bundleSizes,
-        'Route'
-      );
+      const routesTable = getMarkdownTable(masterBundleSizes.data, bundleSizes, 'Route');
       const dynamicTable = getMarkdownTable(
         masterDynamicBundleSizes.data,
         dynamicBundleSizes,
-        'Dynamic import'
+        'Dynamic import',
       );
-      const body =
-        `${prefix}\n\n` +
-        `${info}\n\n` +
-        `${routesTable}\n\n` +
-        `${dynamicTable}\n\n`;
+      const body = `${prefix}\n\n` + `${info}\n\n` + `${routesTable}\n\n` + `${dynamicTable}\n\n`;
       createOrReplaceComment(octokit, issueNumber, prefix, body);
     } else if (github.context.ref === `refs/heads/${baseBranch}`) {
       console.log('> Creating/updating bundle size issue');
 
-      const routesTableNoDiff = getMarkdownTable(
-        [],
-        bundleSizes,
-        'Route'
-      );
-      const dynamicTableNoDiff = getMarkdownTable(
-        [],
-        dynamicBundleSizes,
-        'Dynamic import'
-      );
-      const bodyNoDiff =
-        `${routesTableNoDiff}\n\n` +
-        `${dynamicTableNoDiff}\n\n`;
+      const routesTableNoDiff = getMarkdownTable([], bundleSizes, 'Route');
+      const dynamicTableNoDiff = getMarkdownTable([], dynamicBundleSizes, 'Dynamic import');
+      const bodyNoDiff = `${routesTableNoDiff}\n\n` + `${dynamicTableNoDiff}\n\n`;
       createOrReplaceIssue(octokit, bodyNoDiff);
     }
   } catch (e) {
     console.log(e);
-    core.setFailed(e.message);
+    core.setFailed((e as { message?: any })?.message);
   }
 }
 

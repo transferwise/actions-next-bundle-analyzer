@@ -10,7 +10,6 @@ export async function uploadJsonAsArtifact(
   const artifactClient = create();
 
   const dir = tmp.dirSync();
-  // @ts-expect-error types of tmp are wrong
   const file = tmp.fileSync({ name: fileName, dir: dir.name });
 
   fs.writeFileSync(file.name, JSON.stringify(data, null, 2));
