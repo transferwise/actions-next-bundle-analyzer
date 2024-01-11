@@ -14,16 +14,23 @@ const DYNAMIC_FILE_NAME = 'dynamic-bundle-sizes.json';
 async function run() {
   try {
     const workflowId = core.getInput('workflow-id', { required: true });
-    const baseBranch = core.getInput('base-branch') || 'master';
     const workingDir = core.getInput('working-directory') || '';
 
     const octokit = github.getOctokit(process.env.GITHUB_TOKEN || '');
+
+    const {
+      data: { default_branch },
+    } = await octokit.rest.repos.get({
+      owner: github.context.repo.owner,
+      repo: github.context.repo.repo,
+    });
+
     const issueNumber = github.context.payload.pull_request?.number;
 
-    console.log(`> Downloading bundle sizes from ${baseBranch}`);
+    console.log(`> Downloading bundle sizes from ${default_branch}`);
     const masterBundleSizes = (await downloadArtifactAsJson(
       octokit,
-      baseBranch,
+      default_branch,
       workflowId,
       ARTIFACT_NAME,
       FILE_NAME,
@@ -31,7 +38,7 @@ async function run() {
     console.log(masterBundleSizes);
     const masterDynamicBundleSizes = (await downloadArtifactAsJson(
       octokit,
-      baseBranch,
+      default_branch,
       workflowId,
       ARTIFACT_NAME,
       DYNAMIC_FILE_NAME,
@@ -61,7 +68,7 @@ async function run() {
       );
       const body = `${prefix}\n\n` + `${info}\n\n` + `${routesTable}\n\n` + `${dynamicTable}\n\n`;
       createOrReplaceComment(octokit, issueNumber, prefix, body);
-    } else if (github.context.ref === `refs/heads/${baseBranch}`) {
+    } else if (github.context.ref === `refs/heads/${default_branch}`) {
       console.log('> Creating/updating bundle size issue');
 
       const routesTableNoDiff = getMarkdownTable([], bundleSizes, 'Route');
