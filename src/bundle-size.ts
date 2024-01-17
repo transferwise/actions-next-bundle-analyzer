@@ -6,30 +6,19 @@ type BuildManifest = {
   pages: Record<string, string[]>;
 };
 
-type ReactLoadableManifest = Record<string, Next10Chunks | Next12Chunks>;
-type Next10Chunks = { id: string; file: string }[];
-type Next12Chunks = { id: string; files: string[] };
-
 export type PageBundleSizes = { page: string; size: number }[];
 
 export function getStaticBundleSizes(workingDir: string): PageBundleSizes {
   const manifest = loadBuildManifest(workingDir);
 
-  return getPageSizesFromManifest(manifest,workingDir);
-}
-
-export function getDynamicBundleSizes(workingDir: string): PageBundleSizes {
-  const staticManifest = loadBuildManifest(workingDir);
-  const manifest = loadReactLoadableManifest(staticManifest.pages['/_app'], workingDir);
-
   return getPageSizesFromManifest(manifest, workingDir);
 }
 
-function getPageSizesFromManifest(manifest: BuildManifest,workingDir: string): PageBundleSizes {
+function getPageSizesFromManifest(manifest: BuildManifest, workingDir: string): PageBundleSizes {
   return Object.entries(manifest.pages).map(([page, files]) => {
     const size = files
       .map((filename: string) => {
-        const fn = path.join(process.cwd(), workingDir,'.next', filename);
+        const fn = path.join(process.cwd(), workingDir, '.next', filename);
         const bytes = fs.readFileSync(fn);
         const gzipped = zlib.gzipSync(bytes);
         return gzipped.byteLength;
@@ -41,34 +30,11 @@ function getPageSizesFromManifest(manifest: BuildManifest,workingDir: string): P
 }
 
 function loadBuildManifest(workingDir: string): BuildManifest {
-  const file = fs.readFileSync(path.join(process.cwd(), workingDir, '.next', 'build-manifest.json'), 'utf-8');
-  return JSON.parse(file);
-}
-
-function loadReactLoadableManifest(appChunks: string[], workingDir: string): BuildManifest {
   const file = fs.readFileSync(
-    path.join(process.cwd(), workingDir, '.next', 'react-loadable-manifest.json'),
+    path.join(process.cwd(), workingDir, '.next', 'build-manifest.json'),
     'utf-8',
   );
-  const content = JSON.parse(file) as ReactLoadableManifest;
-  const pages = {} as BuildManifest['pages'];
-  Object.keys(content).map((item) => {
-    const fileList = getFiles(content[item]);
-    const uniqueFileList = Array.from(new Set(fileList));
-    pages[item] = uniqueFileList.filter(
-      (file) => !appChunks.find((chunkFile) => file === chunkFile),
-    );
-  });
-  return {
-    pages,
-  };
-}
-
-function getFiles(chunks: Next10Chunks | Next12Chunks): string[] {
-  if ((chunks as Next12Chunks).files) {
-    return (chunks as Next12Chunks).files;
-  }
-  return (chunks as Next10Chunks).map(({ file }) => file);
+  return JSON.parse(file);
 }
 
 export function getMarkdownTable(
