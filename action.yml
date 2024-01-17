@@ -1,7 +1,5 @@
 name: 'Next.js bundle analyzer'
 inputs:
-  workflow-id:
-    description: 'Workflow ID containing this step'
   working-directory:
     description: 'Directory containing built files'
     default: ''

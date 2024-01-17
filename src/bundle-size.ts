@@ -38,18 +38,18 @@ function loadBuildManifest(workingDir: string): BuildManifest {
 }
 
 export function getMarkdownTable(
-  masterBundleSizes: PageBundleSizes = [],
+  referenceBundleSizes: PageBundleSizes = [],
   bundleSizes: PageBundleSizes,
   name: string = 'Route',
 ): string {
-  // Produce a Markdown table with each page, its size and difference to master
-  const rows = getPageChangeInfo(masterBundleSizes, bundleSizes);
+  // Produce a Markdown table with each page, its size and difference to default branch
+  const rows = getPageChangeInfo(referenceBundleSizes, bundleSizes);
   if (rows.length === 0) {
     return `${name}: None found.`;
   }
 
-  // No diff if master bundle sizes is empty
-  if (masterBundleSizes.length === 0) {
+  // No diff if reference bundle sizes is empty
+  if (referenceBundleSizes.length === 0) {
     return formatTableNoDiff(name, rows);
   }
 
@@ -68,23 +68,23 @@ type PageChangeInfo = {
 };
 
 function getPageChangeInfo(
-  masterBundleSizes: PageBundleSizes,
+  referenceBundleSizes: PageBundleSizes,
   bundleSizes: PageBundleSizes,
 ): PageChangeInfo[] {
   const addedAndChanged: PageChangeInfo[] = bundleSizes.map(({ page, size }) => {
-    const masterSize = masterBundleSizes.find((x) => x.page === page);
-    if (masterSize) {
+    const referenceSize = referenceBundleSizes.find((x) => x.page === page);
+    if (referenceSize) {
       return {
         page,
         type: 'changed',
         size,
-        diff: size - masterSize.size,
+        diff: size - referenceSize.size,
       };
     }
     return { page, type: 'added', size, diff: size };
   });
 
-  const removed: PageChangeInfo[] = masterBundleSizes
+  const removed: PageChangeInfo[] = referenceBundleSizes
     .filter(({ page }) => !bundleSizes.find((x) => x.page === page))
     .map(({ page }) => ({ page, type: 'removed', size: 0, diff: 0 }));
 
