@@ -1,21 +1,7 @@
 import * as github from '@actions/github';
 
 import type { Octokit } from './types';
-
-function createHtmlComment(content: string) {
-  return `<!-- ${content} -->`;
-}
-
-function getAppNameDelimiter(appName: string) {
-  return {
-    start: createHtmlComment(`${appName} start`),
-    end: createHtmlComment(`${appName} end`),
-  } as const;
-}
-
-export function formatTextFragments(...text: string[]) {
-  return text.join('\n\n');
-}
+import { createContentByDelimiter, swapContentPartiallyByDelimiter } from './text-format';
 
 export async function createOrReplaceComment(
   octokit: Octokit,
@@ -49,33 +35,6 @@ export async function createOrReplaceComment(
     });
     console.log(`Done with status ${response.status}`);
   }
-}
-
-function swapContentPartiallyByDelimiter({
-  existingContent,
-  newPartialContent,
-  delimiterIdentifier,
-}: {
-  existingContent: string;
-  newPartialContent: string;
-  delimiterIdentifier: string;
-}) {
-  const delimiter = getAppNameDelimiter(delimiterIdentifier);
-  const startIndex = existingContent.indexOf(delimiter.start);
-  const endIndex = existingContent.indexOf(delimiter.end, startIndex);
-  if (startIndex === -1 || endIndex === -1) {
-    return formatTextFragments(existingContent, delimiter.start, newPartialContent, delimiter.end);
-  }
-  const existingBodyStart = existingContent.substring(0, startIndex);
-  const existingBodyEnd = existingContent.substring(endIndex + delimiter.end.length);
-
-  return formatTextFragments(
-    existingBodyStart,
-    delimiter.start,
-    newPartialContent,
-    delimiter.end,
-    existingBodyEnd,
-  );
 }
 
 export async function createOrUpdateCommentPartially({
@@ -114,8 +73,11 @@ export async function createOrUpdateCommentPartially({
     });
     console.log(`Done with status ${response.status}`);
   } else {
-    const appNameDelimiter = getAppNameDelimiter(appName);
-    const newBody = formatTextFragments(title, appNameDelimiter.start, body, appNameDelimiter.end);
+    const newBody = createContentByDelimiter({
+      title,
+      content: body,
+      delimiterIdentifier: appName,
+    });
     console.log(`Creating comment on PR ${issueNumber}`);
     const response = await octokit.rest.issues.createComment({
       ...github.context.repo,

@@ -1,5 +1,5 @@
 import { PageBundleSizes, getMarkdownTable } from './bundle-size';
-import { formatTextFragments } from './comments';
+import { formatTextFragments } from './text-format';
 
 export function createPartialBundleInfo({
   appName,
