@@ -1,5 +1,5 @@
 import * as core from '@actions/core';
-import * as github from '@actions/github';
+import { context, getOctokit } from '@actions/github';
 import { getStaticBundleSizes, getMarkdownTable } from './bundle-size';
 
 import { createOrUpdateCommentPartially } from './comments';
@@ -19,16 +19,13 @@ async function run() {
     const appName = determineAppName(workingDir);
     const artifactName = `${ARTIFACT_NAME_PREFIX}${appName}`;
 
-    const octokit = github.getOctokit(process.env.GITHUB_TOKEN || '');
+    const octokit = getOctokit(process.env.GITHUB_TOKEN || '');
 
     const {
       data: { default_branch },
-    } = await octokit.rest.repos.get({
-      owner: github.context.repo.owner,
-      repo: github.context.repo.repo,
-    });
+    } = await octokit.rest.repos.get({ ...context.repo });
 
-    const issueNumber = github.context.payload.pull_request?.number;
+    const issueNumber = context.payload.pull_request?.number;
 
     console.log(`> Downloading bundle sizes from ${default_branch}`);
     const referenceBundleSizes = (await downloadArtifactAsJson(
@@ -61,7 +58,7 @@ async function run() {
         title: COMMENT_TITLE,
         body,
       });
-    } else if (github.context.ref === `refs/heads/${default_branch}`) {
+    } else if (context.ref === `refs/heads/${default_branch}`) {
       console.log('> Creating/updating bundle size issue');
       createOrUpdateIssuePartially({
         octokit,

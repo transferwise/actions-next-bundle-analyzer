@@ -1,5 +1,5 @@
 import AdmZip from 'adm-zip';
-import * as github from '@actions/github';
+import { context } from '@actions/github';
 
 import { Octokit } from './types';
 import { PageBundleSizes } from './bundle-size';
@@ -15,7 +15,7 @@ async function findArtifactForBranch({
 }) {
   // TODO: Paginate
   const { data } = await octokit.rest.actions.listArtifactsForRepo({
-    ...github.context.repo,
+    ...context.repo,
     name: artifactName,
   });
   const [matchingArtifact] = data.artifacts
@@ -49,7 +49,7 @@ export async function downloadArtifactAsJson(
     // Download a zip of the artifact and find the JSON file
     console.log(`Downloading artifact ZIP for artifact ${bundleSizeArtifact.id}...`);
     const zip = await octokit.rest.actions.downloadArtifact({
-      ...github.context.repo,
+      ...context.repo,
       artifact_id: bundleSizeArtifact.id,
       archive_format: 'zip',
     });
