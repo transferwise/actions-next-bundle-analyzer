@@ -7,6 +7,7 @@ import { createOrReplaceIssue } from './issue';
 import { downloadArtifactAsJson } from './download-artifacts';
 import { uploadJsonAsArtifact } from './upload-artifacts';
 import { createPartialBundleInfo } from './create-partial-bundle-info';
+import { determineAppName } from './determine-app-name';
 
 const ARTIFACT_NAME_PREFIX = 'next-bundle-analyzer__';
 const FILE_NAME = 'bundle-sizes.json';
@@ -15,8 +16,7 @@ const COMMENT_TITLE = '## Bundle Sizes';
 async function run() {
   try {
     const workingDir = core.getInput('working-directory') || '';
-    // TODO: normalize name https://github.com/actions/upload-artifact/issues/22
-    const appName = workingDir.split('/').pop() || 'default';
+    const appName = determineAppName(workingDir);
     const artifactName = `${ARTIFACT_NAME_PREFIX}${appName}`;
 
     const octokit = github.getOctokit(process.env.GITHUB_TOKEN || '');
