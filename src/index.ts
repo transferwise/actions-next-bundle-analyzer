@@ -3,7 +3,7 @@ import * as github from '@actions/github';
 import { getStaticBundleSizes, getMarkdownTable } from './bundle-size';
 
 import { createOrUpdateCommentPartially } from './comments';
-import { createOrReplaceIssue } from './issue';
+import { createOrUpdateIssuePartially } from './issue';
 import { downloadArtifactAsJson } from './download-artifacts';
 import { uploadJsonAsArtifact } from './upload-artifacts';
 import { createPartialBundleInfo } from './create-partial-bundle-info';
@@ -62,13 +62,12 @@ async function run() {
         body,
       });
     } else if (github.context.ref === `refs/heads/${default_branch}`) {
-      // TODO
-      return;
       console.log('> Creating/updating bundle size issue');
-
-      const routesTableNoDiff = getMarkdownTable([], bundleSizes, 'Route');
-      const bodyNoDiff = `${routesTableNoDiff}\n\n`;
-      createOrReplaceIssue(octokit, bodyNoDiff);
+      createOrUpdateIssuePartially({
+        octokit,
+        appName,
+        body: getMarkdownTable([], bundleSizes, 'Route'),
+      });
     }
   } catch (e) {
     console.log(e);
