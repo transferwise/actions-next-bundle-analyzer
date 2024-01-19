@@ -12,7 +12,7 @@ export function createPartialBundleInfo({
   referenceBundleSizes: PageBundleSizes;
   actualBundleSizes: PageBundleSizes;
 }): string {
-  const title = `### Bundle sizes for ${appName}`;
+  const title = `### ${appName}`;
   const info = `Compared against ${referenceSha}`;
   const routesTable = getMarkdownTable(referenceBundleSizes, actualBundleSizes, 'Route');
   return formatTextFragments(title, info, routesTable);
