@@ -1,0 +1,21 @@
+name: 'Bootstrap environment'
+description: Sets up directory, pnpm and deps
+
+runs:
+  using: composite
+  steps:
+    - name: Mark directory as safe
+      run: git config --global --add safe.directory $GITHUB_WORKSPACE
+      shell: bash
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v2
+
+    - name: Setup node
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: .nvmrc
+
+    - name: Install dependencies
+      run: pnpm install --unsafe-perm --ignore-scripts
+      shell: bash
