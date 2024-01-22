@@ -15,11 +15,12 @@ const COMMENT_TITLE = '## Bundle Sizes';
 
 async function run() {
   try {
-    const workingDir = core.getInput('working-directory') || '';
+    const workingDir = core.getInput('working-directory');
+    const token = core.getInput('github-token');
     const appName = determineAppName(workingDir);
     const artifactName = `${ARTIFACT_NAME_PREFIX}${appName}`;
 
-    const octokit = getOctokit(process.env.GITHUB_TOKEN || '');
+    const octokit = getOctokit(token);
 
     const {
       data: { default_branch },

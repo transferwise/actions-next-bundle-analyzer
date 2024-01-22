@@ -1,8 +1,14 @@
 name: 'Next.js bundle analyzer'
-inputs:
-  working-directory:
-    description: 'Directory containing built files'
-    default: ''
+description: 'Measure Next.js app page sizes and notify of changes in PR comments'
 runs:
   using: 'node20'
   main: 'dist/index.js'
+inputs:
+  working-directory:
+    description: 'Directory containing built files'
+    required: false
+    default: ''
+  github-token:
+    description: 'The GitHub token used to authenticate with the GitHub API.'
+    required: false
+    default: ${{ github.token }}
