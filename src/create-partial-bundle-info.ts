@@ -17,3 +17,15 @@ export function createPartialBundleInfo({
   const routesTable = getMarkdownTable(referenceBundleSizes, actualBundleSizes, 'Route');
   return formatTextFragments(title, info, routesTable);
 }
+
+export function createPartialReferenceBundleInfo({
+  appName,
+  actualBundleSizes,
+}: {
+  appName: string;
+  actualBundleSizes: PageBundleSizes;
+}): string {
+  const title = `### ${appName}`;
+  const routesTable = getMarkdownTable([], actualBundleSizes, 'Route');
+  return formatTextFragments(title, routesTable);
+}
