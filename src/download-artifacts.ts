@@ -23,7 +23,7 @@ async function findArtifactForBranch({
     .sort((a, b) => {
       const aDate = new Date(a.created_at ?? 0);
       const bDate = new Date(b.created_at ?? 0);
-      return aDate.getTime() - bDate.getTime();
+      return bDate.getTime() - aDate.getTime();
     });
   return matchingArtifact ?? null;
 }
