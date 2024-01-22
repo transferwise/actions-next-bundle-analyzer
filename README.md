@@ -12,9 +12,8 @@ Add the following step to a workflow which runs on a [pull_request](https://docs
   with:
     # Optional, specifies where to look for .next folder. Default to cwd.
     working-directory: ./apps/my-next-app
-  env:
-    # This secret is automatically injected by GitHub
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    # Optional, defaults to `github.token`.
+    github-token: ${{ github.token }}
 ```
 
 ### On a Pull Request
