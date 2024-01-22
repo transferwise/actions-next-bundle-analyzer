@@ -4,7 +4,7 @@ GitHub action that analyses the bundle sizes for each route in a Next.js build.
 
 ## Usage
 
-Add the following step to a workflow which runs on a [pull_request](https://docs.github.com/en/actions/reference/events-that-trigger-workflows#pull_request) event, after the Next.js project has been built (i.e. after running `yarn build`).
+Add the following step to a workflow which runs on a [pull_request](https://docs.github.com/en/actions/reference/events-that-trigger-workflows#pull_request) event, after the Next.js project has been built (i.e. after running `pnpm run build`).
 
 ```yml
 - name: Analyze bundle sizes
@@ -36,7 +36,7 @@ When the workflow runs on the default branch, it will create/update a GitHub Iss
 Compiled files must also be commited. After making changes to TypeScript files run
 
 ```
-yarn build
+pnpm run build
 ```
 
 Add both the source files and the new compiled files to your pull request.
