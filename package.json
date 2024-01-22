@@ -8,6 +8,7 @@
   "private": true,
   "scripts": {
     "build": "ncc build src/index.ts",
+    "check-dist": "git diff --ignore-space-at-eol --exit-code dist/",
     "test": "vitest"
   },
   "devDependencies": {
