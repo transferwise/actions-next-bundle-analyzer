@@ -1,73 +1,70 @@
 import * as core from '@actions/core';
-import * as github from '@actions/github';
-import { getStaticBundleSizes, getDynamicBundleSizes, getMarkdownTable } from './bundle-size';
+import { context, getOctokit } from '@actions/github';
+import { getStaticBundleSizes, getMarkdownTable } from './bundle-size';
 
-import { createOrReplaceComment } from './comments';
-import { createOrReplaceIssue } from './issue';
+import { createOrUpdateCommentPartially } from './comments';
+import { createOrUpdateIssuePartially } from './issue';
 import { downloadArtifactAsJson } from './download-artifacts';
 import { uploadJsonAsArtifact } from './upload-artifacts';
+import { createPartialBundleInfo } from './create-partial-bundle-info';
+import { determineAppName } from './determine-app-name';
 
-const ARTIFACT_NAME = 'next-bundle-analyzer';
+const ARTIFACT_NAME_PREFIX = 'next-bundle-analyzer__';
 const FILE_NAME = 'bundle-sizes.json';
-const DYNAMIC_FILE_NAME = 'dynamic-bundle-sizes.json';
+const COMMENT_TITLE = '## Bundle Sizes';
 
 async function run() {
   try {
-    const workflowId = core.getInput('workflow-id', { required: true });
-    const baseBranch = core.getInput('base-branch') || 'master';
     const workingDir = core.getInput('working-directory') || '';
+    const appName = determineAppName(workingDir);
+    const artifactName = `${ARTIFACT_NAME_PREFIX}${appName}`;
 
-    const octokit = github.getOctokit(process.env.GITHUB_TOKEN || '');
-    const issueNumber = github.context.payload.pull_request?.number;
+    const octokit = getOctokit(process.env.GITHUB_TOKEN || '');
 
-    console.log(`> Downloading bundle sizes from ${baseBranch}`);
-    const masterBundleSizes = (await downloadArtifactAsJson(
+    const {
+      data: { default_branch },
+    } = await octokit.rest.repos.get({ ...context.repo });
+
+    const issueNumber = context.payload.pull_request?.number;
+
+    console.log(`> Downloading bundle sizes from ${default_branch}`);
+    const referenceBundleSizes = (await downloadArtifactAsJson(
       octokit,
-      baseBranch,
-      workflowId,
-      ARTIFACT_NAME,
+      default_branch,
+      artifactName,
       FILE_NAME,
     )) || { sha: 'none', data: [] };
-    console.log(masterBundleSizes);
-    const masterDynamicBundleSizes = (await downloadArtifactAsJson(
-      octokit,
-      baseBranch,
-      workflowId,
-      ARTIFACT_NAME,
-      DYNAMIC_FILE_NAME,
-    )) || { sha: 'none', data: [] };
-    console.log(masterDynamicBundleSizes);
+    console.log(referenceBundleSizes);
 
     console.log('> Calculating local bundle sizes');
     const bundleSizes = getStaticBundleSizes(workingDir);
     console.log(bundleSizes);
-    const dynamicBundleSizes = getDynamicBundleSizes(workingDir);
-    console.log(dynamicBundleSizes);
 
     console.log('> Uploading local bundle sizes');
-    await uploadJsonAsArtifact(ARTIFACT_NAME, FILE_NAME, bundleSizes);
-    await uploadJsonAsArtifact(ARTIFACT_NAME, DYNAMIC_FILE_NAME, dynamicBundleSizes);
+    await uploadJsonAsArtifact(artifactName, FILE_NAME, bundleSizes);
 
     if (issueNumber) {
       console.log('> Commenting on PR');
-      const prefix = '### Bundle Sizes';
-      const info = `Compared against ${masterBundleSizes.sha}`;
-
-      const routesTable = getMarkdownTable(masterBundleSizes.data, bundleSizes, 'Route');
-      const dynamicTable = getMarkdownTable(
-        masterDynamicBundleSizes.data,
-        dynamicBundleSizes,
-        'Dynamic import',
-      );
-      const body = `${prefix}\n\n` + `${info}\n\n` + `${routesTable}\n\n` + `${dynamicTable}\n\n`;
-      createOrReplaceComment(octokit, issueNumber, prefix, body);
-    } else if (github.context.ref === `refs/heads/${baseBranch}`) {
+      const body = createPartialBundleInfo({
+        appName,
+        referenceSha: referenceBundleSizes.sha,
+        referenceBundleSizes: referenceBundleSizes.data,
+        actualBundleSizes: bundleSizes,
+      });
+      createOrUpdateCommentPartially({
+        octokit,
+        issueNumber,
+        appName,
+        title: COMMENT_TITLE,
+        body,
+      });
+    } else if (context.ref === `refs/heads/${default_branch}`) {
       console.log('> Creating/updating bundle size issue');
-
-      const routesTableNoDiff = getMarkdownTable([], bundleSizes, 'Route');
-      const dynamicTableNoDiff = getMarkdownTable([], dynamicBundleSizes, 'Dynamic import');
-      const bodyNoDiff = `${routesTableNoDiff}\n\n` + `${dynamicTableNoDiff}\n\n`;
-      createOrReplaceIssue(octokit, bodyNoDiff);
+      createOrUpdateIssuePartially({
+        octokit,
+        appName,
+        body: getMarkdownTable([], bundleSizes, 'Route'),
+      });
     }
   } catch (e) {
     console.log(e);
