@@ -6,7 +6,10 @@ import { createOrUpdateCommentPartially } from './comments';
 import { createOrUpdateIssuePartially } from './issue';
 import { downloadArtifactAsJson } from './download-artifacts';
 import { uploadJsonAsArtifact } from './upload-artifacts';
-import { createPartialBundleInfo } from './create-partial-bundle-info';
+import {
+  createPartialBundleInfo,
+  createPartialReferenceBundleInfo,
+} from './create-partial-bundle-info';
 import { determineAppName } from './determine-app-name';
 
 const ARTIFACT_NAME_PREFIX = 'next-bundle-analyzer__';
@@ -61,10 +64,14 @@ async function run() {
       });
     } else if (context.ref === `refs/heads/${default_branch}`) {
       console.log('> Creating/updating bundle size issue');
+      const body = createPartialReferenceBundleInfo({
+        appName,
+        actualBundleSizes: bundleSizes,
+      });
       createOrUpdateIssuePartially({
         octokit,
         appName,
-        body: getMarkdownTable([], bundleSizes, 'Route'),
+        body,
       });
     }
   } catch (e) {
