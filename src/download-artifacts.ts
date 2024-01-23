@@ -27,7 +27,7 @@ async function findArtifactForBranch({
   let pageIndex = 0;
   for await (const { data: artifacts } of artifactPageIterator) {
     for (const artifact of artifacts) {
-      if (artifact.workflow_run?.head_branch === branch) {
+      if (artifact.workflow_run?.head_branch === branch && !artifact.expired) {
         return artifact;
       }
     }
