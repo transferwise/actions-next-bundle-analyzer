@@ -1,20 +1,15 @@
 import * as core from '@actions/core';
 import { context, getOctokit } from '@actions/github';
-import { getStaticBundleSizes, getMarkdownTable } from './bundle-size';
+import { getStaticBundleSizes } from './bundle-size';
 
-import { createOrUpdateCommentPartially } from './comments';
-import { createOrUpdateIssuePartially } from './issue';
-import { downloadArtifactAsJson } from './download-artifacts';
-import { uploadJsonAsArtifact } from './upload-artifacts';
-import {
-  createPartialBundleInfo,
-  createPartialReferenceBundleInfo,
-} from './create-partial-bundle-info';
+import { createOrReplaceComment } from './comments';
 import { determineAppName } from './determine-app-name';
+import { downloadArtifactAsJson } from './download-artifacts';
+import { createOrReplaceIssue } from './issue';
+import { uploadJsonAsArtifact } from './upload-artifacts';
 
 const ARTIFACT_NAME_PREFIX = 'next-bundle-analyzer__';
 const FILE_NAME = 'bundle-sizes.json';
-const COMMENT_TITLE = '## Bundle Sizes';
 
 async function run() {
   try {
@@ -27,7 +22,7 @@ async function run() {
 
     const {
       data: { default_branch },
-    } = await octokit.rest.repos.get({ ...context.repo });
+    } = await octokit.rest.repos.get(context.repo);
 
     const issueNumber = context.payload.pull_request?.number;
 
@@ -49,29 +44,20 @@ async function run() {
 
     if (issueNumber) {
       console.log('> Commenting on PR');
-      const body = createPartialBundleInfo({
+      createOrReplaceComment({
+        octokit,
+        issueNumber,
         appName,
         referenceSha: referenceBundleSizes.sha,
         referenceBundleSizes: referenceBundleSizes.data,
         actualBundleSizes: bundleSizes,
       });
-      createOrUpdateCommentPartially({
-        octokit,
-        issueNumber,
-        appName,
-        title: COMMENT_TITLE,
-        body,
-      });
     } else if (context.ref === `refs/heads/${default_branch}`) {
       console.log('> Creating/updating bundle size issue');
-      const body = createPartialReferenceBundleInfo({
-        appName,
-        actualBundleSizes: bundleSizes,
-      });
-      createOrUpdateIssuePartially({
+      createOrReplaceIssue({
         octokit,
         appName,
-        body,
+        actualBundleSizes: bundleSizes,
       });
     }
   } catch (e) {
