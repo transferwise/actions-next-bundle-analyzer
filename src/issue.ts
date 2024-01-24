@@ -1,51 +1,41 @@
 import { context } from '@actions/github';
 
+import { PageBundleSizes, getMarkdownTable } from './bundle-size';
 import type { Octokit } from './types';
-import { createContentByDelimiter, swapContentPartiallyByDelimiter } from './text-format';
 
-const ISSUE_TITLE = 'Current Bundle Sizes';
+async function findIssueByTitleMatch({ octokit, title }: { octokit: Octokit; title: string }) {
+  const { data: issues } = await octokit.rest.issues.listForRepo(context.repo);
+  return issues.find((issue) => issue.title === title);
+}
 
-export async function createOrUpdateIssuePartially({
+export async function createOrReplaceIssue({
   octokit,
   appName,
-  body,
+  actualBundleSizes,
 }: {
   octokit: Octokit;
   appName: string;
-  body: string;
+  actualBundleSizes: PageBundleSizes;
 }): Promise<void> {
-  const { data: issues } = await octokit.rest.issues.listForRepo(context.repo);
+  const title = `### Bundle sizes [${appName}]`;
+  const routesTable = getMarkdownTable([], actualBundleSizes, 'Route');
+  const existingIssue = await findIssueByTitleMatch({ octokit, title });
 
-  const existingIssue = issues.find((issue) => issue.title === ISSUE_TITLE);
-
-  if (existingIssue && existingIssue.body) {
-    const newBody = swapContentPartiallyByDelimiter({
-      existingContent: existingIssue.body,
-      newPartialContent: body,
-      delimiterIdentifier: appName,
-    });
+  if (existingIssue) {
     console.log(`Updating issue ${existingIssue.number} with latest bundle sizes`);
-
     const response = await octokit.rest.issues.update({
       ...context.repo,
-      body: newBody,
+      body: routesTable,
       issue_number: existingIssue.number,
     });
-
     console.log(`Issue update response status ${response.status}`);
   } else {
-    const newBody = createContentByDelimiter({
-      title: '',
-      content: body,
-      delimiterIdentifier: appName,
-    });
-    console.log(`Creating issue ${ISSUE_TITLE} to show latest bundle sizes`);
+    console.log(`Creating issue "${title}" to show latest bundle sizes`);
     const response = await octokit.rest.issues.create({
       ...context.repo,
-      body: newBody,
-      title: ISSUE_TITLE,
+      body: routesTable,
+      title,
     });
-
     console.log(`Issue creation response status ${response.status}`);
   }
 }

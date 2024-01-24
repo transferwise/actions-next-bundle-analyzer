@@ -60,6 +60,20 @@ export function getMarkdownTable(
   return `${name}: No significant changes found`;
 }
 
+export function getBundleComparisonInfo({
+  referenceSha,
+  referenceBundleSizes,
+  actualBundleSizes,
+}: {
+  referenceSha: string;
+  referenceBundleSizes: PageBundleSizes;
+  actualBundleSizes: PageBundleSizes;
+}) {
+  const info = `Compared against ${referenceSha}`;
+  const routesTable = getMarkdownTable(referenceBundleSizes, actualBundleSizes, 'Route');
+  return { info, routesTable };
+}
+
 type PageChangeInfo = {
   page: string;
   type: 'added' | 'changed' | 'removed';
