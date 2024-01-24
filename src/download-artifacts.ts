@@ -4,6 +4,9 @@ import { context } from '@actions/github';
 import { Octokit } from './types';
 import { PageBundleSizes } from './bundle-size';
 
+const TOTAL_PAGES_LIMIT = 10;
+const ARTIFACTS_PER_PAGE_LIMIT = 100;
+
 async function findArtifactForBranch({
   octokit,
   branch,
@@ -13,19 +16,27 @@ async function findArtifactForBranch({
   branch: string;
   artifactName: string;
 }) {
-  // TODO: Paginate
-  const { data } = await octokit.rest.actions.listArtifactsForRepo({
-    ...context.repo,
-    name: artifactName,
-  });
-  const [matchingArtifact] = data.artifacts
-    .filter((artifact) => artifact.workflow_run?.head_branch === branch)
-    .sort((a, b) => {
-      const aDate = new Date(a.created_at ?? 0);
-      const bDate = new Date(b.created_at ?? 0);
-      return bDate.getTime() - aDate.getTime();
-    });
-  return matchingArtifact ?? null;
+  const artifactPageIterator = octokit.paginate.iterator(
+    octokit.rest.actions.listArtifactsForRepo,
+    {
+      ...context.repo,
+      name: artifactName,
+      per_page: ARTIFACTS_PER_PAGE_LIMIT,
+    },
+  );
+  let pageIndex = 0;
+  for await (const { data: artifacts } of artifactPageIterator) {
+    for (const artifact of artifacts) {
+      if (artifact.workflow_run?.head_branch === branch && !artifact.expired) {
+        return artifact;
+      }
+    }
+    if (pageIndex++ >= TOTAL_PAGES_LIMIT) {
+      console.log(`Artifact not found in last ${TOTAL_PAGES_LIMIT} pages`);
+      break;
+    }
+  }
+  return null;
 }
 
 export async function downloadArtifactAsJson(
