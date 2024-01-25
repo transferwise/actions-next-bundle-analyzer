@@ -37,13 +37,31 @@ function loadBuildManifest(workingDir: string): BuildManifest {
   return JSON.parse(file);
 }
 
-export function getMarkdownTable(
-  referenceBundleSizes: PageBundleSizes = [],
-  bundleSizes: PageBundleSizes,
-  name: string = 'Route',
-): string {
+export function getSingleColumnMarkdownTable({
+  bundleSizes,
+  name,
+}: {
+  bundleSizes: PageBundleSizes;
+  name: string;
+}): string {
+  const rows = getPageChangeInfo([], bundleSizes);
+  return formatTableNoDiff(name, rows);
+}
+
+/**
+ * @returns a Markdown table of changes or null if there are no significant changes.
+ */
+export function getComparisonMarkdownTable({
+  referenceBundleSizes,
+  actualBundleSizes,
+  name,
+}: {
+  referenceBundleSizes: PageBundleSizes;
+  actualBundleSizes: PageBundleSizes;
+  name: string;
+}): string | null {
   // Produce a Markdown table with each page, its size and difference to default branch
-  const rows = getPageChangeInfo(referenceBundleSizes, bundleSizes);
+  const rows = getPageChangeInfo(referenceBundleSizes, actualBundleSizes);
   if (rows.length === 0) {
     return `${name}: None found.`;
   }
@@ -57,21 +75,7 @@ export function getMarkdownTable(
   if (significant.length > 0) {
     return formatTable(name, significant);
   }
-  return `${name}: No significant changes found`;
-}
-
-export function getBundleComparisonInfo({
-  referenceSha,
-  referenceBundleSizes,
-  actualBundleSizes,
-}: {
-  referenceSha: string;
-  referenceBundleSizes: PageBundleSizes;
-  actualBundleSizes: PageBundleSizes;
-}) {
-  const info = `Compared against ${referenceSha}`;
-  const routesTable = getMarkdownTable(referenceBundleSizes, actualBundleSizes, 'Route');
-  return { info, routesTable };
+  return null;
 }
 
 type PageChangeInfo = {
