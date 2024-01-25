@@ -10,7 +10,7 @@ Add the following step to a workflow which runs on a [pull_request](https://docs
 - name: Analyze bundle sizes
   uses: transferwise/actions-next-bundle-analyzer@v2
   with:
-    # Optional, specifies where to look for .next folder. Default to cwd.
+    # Optional, specifies where to look for .next folder. Defaults to cwd.
     working-directory: ./apps/my-next-app
     # Optional, defaults to `github.token`.
     github-token: ${{ github.token }}
