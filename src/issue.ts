@@ -17,7 +17,7 @@ export async function createOrReplaceIssue({
   appName: string;
   actualBundleSizes: PageBundleSizes;
 }): Promise<void> {
-  const title = `### Bundle sizes [${appName}]`;
+  const title = `Bundle sizes [${appName}]`;
   const routesTable = getMarkdownTable([], actualBundleSizes, 'Route');
   const existingIssue = await findIssueByTitleMatch({ octokit, title });
 
