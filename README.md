@@ -12,6 +12,11 @@ Add the following step to a workflow which runs on a [pull_request](https://docs
   with:
     # Optional, specifies where to look for .next folder. Defaults to cwd.
     working-directory: ./apps/my-next-app
+    # Optional, configures commenting strategy around insignificant changes, defaults to `always`.
+    # Available options:
+    #   always: Always comment on PRs, even if it's just to say there are no significant changes.
+    #   skip-insignificant: Skip commenting on PRs if there are no signficant changes in page sizes.
+    comment-strategy: 'always'
     # Optional, defaults to `github.token`.
     github-token: ${{ github.token }}
 ```

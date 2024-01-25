@@ -8,6 +8,15 @@ inputs:
     description: 'Directory containing built files'
     required: false
     default: ''
+  comment-strategy:
+    description: >
+      The desired behavior for commenting on Pull Requests.
+
+      Available options:
+        always: Always comment on PRs, even if it's just to say there are no significant changes.
+        skip-insignificant: Skip commenting on PRs if there are no signficant changes in page sizes.
+    required: false
+    default: 'always'
   github-token:
     description: 'The GitHub token used to authenticate with the GitHub API.'
     required: false

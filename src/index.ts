@@ -1,10 +1,15 @@
 import * as core from '@actions/core';
 import { context, getOctokit } from '@actions/github';
-import { getStaticBundleSizes } from './bundle-size';
+import {
+  getComparisonMarkdownTable,
+  getSingleColumnMarkdownTable,
+  getStaticBundleSizes,
+} from './bundle-size';
 
 import { createOrReplaceComment } from './comments';
 import { determineAppName } from './determine-app-name';
 import { downloadArtifactAsJson } from './download-artifacts';
+import { getInputs } from './input-helper';
 import { createOrReplaceIssue } from './issue';
 import { uploadJsonAsArtifact } from './upload-artifacts';
 
@@ -13,12 +18,11 @@ const FILE_NAME = 'bundle-sizes.json';
 
 async function run() {
   try {
-    const workingDir = core.getInput('working-directory');
-    const token = core.getInput('github-token');
-    const appName = determineAppName(workingDir);
+    const inputs = getInputs();
+    const appName = determineAppName(inputs.workingDirectory);
     const artifactName = `${ARTIFACT_NAME_PREFIX}${appName}`;
 
-    const octokit = getOctokit(token);
+    const octokit = getOctokit(inputs.githubToken);
 
     const {
       data: { default_branch },
@@ -36,28 +40,36 @@ async function run() {
     console.log(referenceBundleSizes);
 
     console.log('> Calculating local bundle sizes');
-    const bundleSizes = getStaticBundleSizes(workingDir);
+    const bundleSizes = getStaticBundleSizes(inputs.workingDirectory);
     console.log(bundleSizes);
 
     console.log('> Uploading local bundle sizes');
     await uploadJsonAsArtifact(artifactName, FILE_NAME, bundleSizes);
 
     if (issueNumber) {
-      console.log('> Commenting on PR');
+      const title = `### Bundle sizes [${appName}]`;
+      const shaInfo = `Compared against ${referenceBundleSizes.sha}`;
+      const routesTable = getComparisonMarkdownTable({
+        referenceBundleSizes: referenceBundleSizes.data,
+        actualBundleSizes: bundleSizes,
+        name: 'Route',
+      });
       createOrReplaceComment({
         octokit,
         issueNumber,
-        appName,
-        referenceSha: referenceBundleSizes.sha,
-        referenceBundleSizes: referenceBundleSizes.data,
-        actualBundleSizes: bundleSizes,
+        title,
+        shaInfo,
+        routesTable,
+        strategy: inputs.commentStrategy,
       });
     } else if (context.ref === `refs/heads/${default_branch}`) {
       console.log('> Creating/updating bundle size issue');
+      const title = `Bundle sizes [${appName}]`;
+      const routesTable = getSingleColumnMarkdownTable({ bundleSizes, name: 'Route' });
       createOrReplaceIssue({
         octokit,
-        appName,
-        actualBundleSizes: bundleSizes,
+        title,
+        routesTable,
       });
     }
   } catch (e) {

@@ -1,8 +1,10 @@
 import { context } from '@actions/github';
 
-import { PageBundleSizes, getBundleComparisonInfo } from './bundle-size';
 import { formatTextFragments } from './text-format';
 import type { Octokit } from './types';
+import { ActionInputs } from './input-helper';
+
+const FALLBACK_COMPARISON_TEXT = 'No significant changes found';
 
 async function findCommentByTextMatch({
   octokit,
@@ -23,30 +25,25 @@ async function findCommentByTextMatch({
 export async function createOrReplaceComment({
   octokit,
   issueNumber,
-  appName,
-  referenceSha,
-  referenceBundleSizes,
-  actualBundleSizes,
+  title,
+  shaInfo,
+  routesTable,
+  strategy,
 }: {
   octokit: Octokit;
   issueNumber: number;
-  appName: string;
-  referenceSha: string;
-  referenceBundleSizes: PageBundleSizes;
-  actualBundleSizes: PageBundleSizes;
+  title: string;
+  shaInfo: string;
+  routesTable: string | null;
+  strategy: ActionInputs['commentStrategy'];
 }): Promise<void> {
-  const title = `### Bundle sizes [${appName}]`;
-  const { info, routesTable } = getBundleComparisonInfo({
-    referenceSha,
-    referenceBundleSizes,
-    actualBundleSizes,
-  });
-  const body = formatTextFragments(title, info, routesTable);
   const existingComment = await findCommentByTextMatch({
     octokit,
     issueNumber,
     text: title,
   });
+
+  const body = formatTextFragments(title, shaInfo, routesTable ?? FALLBACK_COMPARISON_TEXT);
 
   if (existingComment) {
     console.log(`Updating comment ${existingComment.id}`);
@@ -56,6 +53,8 @@ export async function createOrReplaceComment({
       body,
     });
     console.log(`Done with status ${response.status}`);
+  } else if (!existingComment && !routesTable && strategy === 'skip-insignificant') {
+    console.log(`Skipping comment [${title}]: no significant changes`);
   } else {
     console.log(`Creating comment on PR ${issueNumber}`);
     const response = await octokit.rest.issues.createComment({

@@ -1,6 +1,5 @@
 import { context } from '@actions/github';
 
-import { PageBundleSizes, getMarkdownTable } from './bundle-size';
 import type { Octokit } from './types';
 
 async function findIssueByTitleMatch({ octokit, title }: { octokit: Octokit; title: string }) {
@@ -10,15 +9,13 @@ async function findIssueByTitleMatch({ octokit, title }: { octokit: Octokit; tit
 
 export async function createOrReplaceIssue({
   octokit,
-  appName,
-  actualBundleSizes,
+  title,
+  routesTable,
 }: {
   octokit: Octokit;
-  appName: string;
-  actualBundleSizes: PageBundleSizes;
+  title: string;
+  routesTable: string;
 }): Promise<void> {
-  const title = `Bundle sizes [${appName}]`;
-  const routesTable = getMarkdownTable([], actualBundleSizes, 'Route');
   const existingIssue = await findIssueByTitleMatch({ octokit, title });
 
   if (existingIssue) {
