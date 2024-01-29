@@ -1,0 +1,9 @@
+runChecks: true
+
+actions:
+  branch-protection-settings:
+    branches:
+      - name: master
+      - name: v2
+  repo-settings:
+    allowForking: true
