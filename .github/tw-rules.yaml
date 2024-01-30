@@ -3,7 +3,13 @@ runChecks: true
 actions:
   branch-protection-settings:
     branches:
-      - name: master
       - name: v2
+        checks:
+          - name: Check dist
+            appId: github-actions
+            type: build
+          - name: Test
+            appId: github-actions
+            type: tests
   repo-settings:
     allowForking: true

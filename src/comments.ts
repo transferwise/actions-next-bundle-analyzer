@@ -1,34 +1,64 @@
-import * as github from '@actions/github';
+import { context } from '@actions/github';
 
+import { formatTextFragments } from './text-format';
 import type { Octokit } from './types';
+import { ActionInputs } from './input-helper';
 
-export async function createOrReplaceComment(
-  octokit: Octokit,
-  issueNumber: number,
-  searchString: string,
-  body: string,
-): Promise<void> {
-  const comments = await octokit.rest.issues.listComments({
-    ...github.context.repo,
+const FALLBACK_COMPARISON_TEXT = 'No significant changes found';
+
+async function findCommentByTextMatch({
+  octokit,
+  issueNumber,
+  text,
+}: {
+  octokit: Octokit;
+  issueNumber: number;
+  text: string;
+}) {
+  const { data: comments } = await octokit.rest.issues.listComments({
+    ...context.repo,
     issue_number: issueNumber,
   });
+  return comments.find((comment) => comment.body?.includes(text));
+}
 
-  const existing = comments.data.find(
-    (comment) => comment.body && comment.body.includes(searchString),
-  );
+export async function createOrReplaceComment({
+  octokit,
+  issueNumber,
+  title,
+  shaInfo,
+  routesTable,
+  strategy,
+}: {
+  octokit: Octokit;
+  issueNumber: number;
+  title: string;
+  shaInfo: string;
+  routesTable: string | null;
+  strategy: ActionInputs['commentStrategy'];
+}): Promise<void> {
+  const existingComment = await findCommentByTextMatch({
+    octokit,
+    issueNumber,
+    text: title,
+  });
 
-  if (existing) {
-    console.log(`Updating comment ${existing.id}`);
+  const body = formatTextFragments(title, shaInfo, routesTable ?? FALLBACK_COMPARISON_TEXT);
+
+  if (existingComment) {
+    console.log(`Updating comment ${existingComment.id}`);
     const response = await octokit.rest.issues.updateComment({
-      ...github.context.repo,
-      comment_id: existing.id,
+      ...context.repo,
+      comment_id: existingComment.id,
       body,
     });
     console.log(`Done with status ${response.status}`);
+  } else if (!existingComment && !routesTable && strategy === 'skip-insignificant') {
+    console.log(`Skipping comment [${title}]: no significant changes`);
   } else {
     console.log(`Creating comment on PR ${issueNumber}`);
     const response = await octokit.rest.issues.createComment({
-      ...github.context.repo,
+      ...context.repo,
       issue_number: issueNumber,
       body,
     });

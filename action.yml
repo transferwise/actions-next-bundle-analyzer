@@ -1,13 +1,23 @@
 name: 'Next.js bundle analyzer'
+description: 'Measure Next.js app page sizes and notify of changes in PR comments'
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
 inputs:
-  workflow-id:
-    description: 'Workflow ID containing this step'
-  base-branch:
-    description: 'Base branch of the repo (master or main)'
-    default: master
   working-directory:
     description: 'Directory containing built files'
+    required: false
     default: ''
-runs:
-  using: 'node16'
-  main: 'dist/index.js'
+  comment-strategy:
+    description: >
+      The desired behavior for commenting on Pull Requests.
+
+      Available options:
+        always: Always comment on PRs, even if it's just to say there are no significant changes.
+        skip-insignificant: Skip commenting on PRs if there are no signficant changes in page sizes.
+    required: false
+    default: 'always'
+  github-token:
+    description: 'The GitHub token used to authenticate with the GitHub API.'
+    required: false
+    default: ${{ github.token }}

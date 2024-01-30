@@ -1,4 +1,4 @@
-import { create } from '@actions/artifact';
+import { DefaultArtifactClient } from '@actions/artifact';
 import * as fs from 'fs';
 import * as tmp from 'tmp';
 
@@ -7,7 +7,7 @@ export async function uploadJsonAsArtifact(
   fileName: string,
   data: any,
 ): Promise<void> {
-  const artifactClient = create();
+  const artifactClient = new DefaultArtifactClient();
 
   const dir = tmp.dirSync();
   const file = tmp.fileSync({ name: fileName, dir: dir.name });
