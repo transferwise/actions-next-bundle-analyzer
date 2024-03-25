@@ -17,6 +17,8 @@ Add the following step to a workflow which runs on a [pull_request](https://docs
     #   always: Always comment on PRs, even if it's just to say there are no significant changes.
     #   skip-insignificant: Skip commenting on PRs if there are no signficant changes in page sizes.
     comment-strategy: 'always'
+    # Optional, set to no to not create the bundle size summary issue. Defaults to yes.
+    create-issue: yes
     # Optional, defaults to `github.token`.
     github-token: ${{ github.token }}
 ```

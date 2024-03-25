@@ -62,7 +62,7 @@ async function run() {
         routesTable,
         strategy: inputs.commentStrategy,
       });
-    } else if (context.ref === `refs/heads/${default_branch}`) {
+    } else if (context.ref === `refs/heads/${default_branch}` && inputs.createIssue) {
       console.log('> Creating/updating bundle size issue');
       const title = `Bundle sizes [${appName}]`;
       const routesTable = getSingleColumnMarkdownTable({ bundleSizes, name: 'Route' });
