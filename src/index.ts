@@ -16,6 +16,7 @@ async function run() {
     const workflowId = core.getInput('workflow-id', { required: true });
     const baseBranch = core.getInput('base-branch') || 'master';
     const workingDir = core.getInput('working-directory') || '';
+    const createIssue = core.getInput('create-issue') || '';
 
     const octokit = github.getOctokit(process.env.GITHUB_TOKEN || '');
     const issueNumber = github.context.payload.pull_request?.number;
@@ -61,7 +62,7 @@ async function run() {
       );
       const body = `${prefix}\n\n` + `${info}\n\n` + `${routesTable}\n\n` + `${dynamicTable}\n\n`;
       createOrReplaceComment(octokit, issueNumber, prefix, body);
-    } else if (github.context.ref === `refs/heads/${baseBranch}`) {
+    } else if (github.context.ref === `refs/heads/${baseBranch}` && !(createIssue === 'false' || createIssue === 'no')) {
       console.log('> Creating/updating bundle size issue');
 
       const routesTableNoDiff = getMarkdownTable([], bundleSizes, 'Route');

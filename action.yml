@@ -8,6 +8,9 @@ inputs:
   working-directory:
     description: 'Directory containing built files'
     default: ''
+  create-issue:
+    description: 'Whether or not to create the bundle size issue'
+    default: 'yes'
 runs:
   using: 'node16'
   main: 'dist/index.js'

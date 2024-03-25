@@ -16,6 +16,8 @@ Add the following step to a workflow which runs on a [pull_request](https://docs
     base-branch: master
      # Optional, specifies where to look for .next folder. Default to cwd.
     working-directory: /packages/my-package
+    # Optional, set to no to not create the bundle size summary issue. Default to yes.
+    create-issue: yes
   env:
     # This secret is automatically injected by GitHub
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
