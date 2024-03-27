@@ -17,6 +17,14 @@ inputs:
         skip-insignificant: Skip commenting on PRs if there are no signficant changes in page sizes.
     required: false
     default: 'always'
+  create-issue:
+    description: >
+      Configures whether to create the bundle size summary issue.
+
+      Available options:
+        true
+        false
+    default: 'true'
   github-token:
     description: 'The GitHub token used to authenticate with the GitHub API.'
     required: false
