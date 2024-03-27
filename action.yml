@@ -18,8 +18,13 @@ inputs:
     required: false
     default: 'always'
   create-issue:
-    description: 'Whether or not to create the bundle size issue'
-    default: 'yes'
+    description: >
+      Configures whether to create the bundle size summary issue.
+
+      Available options:
+        true
+        false
+    default: 'true'
   github-token:
     description: 'The GitHub token used to authenticate with the GitHub API.'
     required: false
