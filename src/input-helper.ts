@@ -16,7 +16,7 @@ export function getInputs(): ActionInputs {
   const inputs = {
     workingDirectory,
     commentStrategy: commentStrategy === 'skip-insignificant' ? 'skip-insignificant' : 'always',
-    createIssue: createIssue !== 'no' && createIssue !== 'false',
+    createIssue: createIssue !== 'false',
     githubToken,
   } satisfies ActionInputs;
 
