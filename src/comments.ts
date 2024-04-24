@@ -48,8 +48,9 @@ export async function createOrReplaceComment({
   const body = formatTextFragments(
     title,
     shaInfo,
-    routesTable ?? FALLBACK_COMPARISON_TEXT,
-    dynamicTable ?? FALLBACK_COMPARISON_TEXT,
+    routesTable,
+    dynamicTable,
+    !routesTable?.trim() && !dynamicTable?.trim() ? FALLBACK_COMPARISON_TEXT : null,
   );
 
   if (existingComment) {

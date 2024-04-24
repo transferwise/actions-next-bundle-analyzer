@@ -1,6 +1,6 @@
-export function formatTextFragments(...text: string[]) {
+export function formatTextFragments(...text: Array<string | null>) {
   return text
-    .map((fragment) => fragment.trim())
+    .map((fragment) => fragment?.trim())
     .filter(Boolean)
     .join('\n\n');
 }

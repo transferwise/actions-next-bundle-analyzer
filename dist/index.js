@@ -127878,7 +127878,7 @@ function getSign(bytes) {
 ;// CONCATENATED MODULE: ./src/text-format.ts
 function formatTextFragments(...text) {
     return text
-        .map((fragment) => fragment.trim())
+        .map((fragment) => fragment === null || fragment === void 0 ? void 0 : fragment.trim())
         .filter(Boolean)
         .join('\n\n');
 }
@@ -127897,7 +127897,7 @@ async function createOrReplaceComment({ octokit, issueNumber, title, shaInfo, ro
         issueNumber,
         text: title,
     });
-    const body = formatTextFragments(title, shaInfo, routesTable !== null && routesTable !== void 0 ? routesTable : FALLBACK_COMPARISON_TEXT, dynamicTable !== null && dynamicTable !== void 0 ? dynamicTable : FALLBACK_COMPARISON_TEXT);
+    const body = formatTextFragments(title, shaInfo, routesTable, dynamicTable, !(routesTable === null || routesTable === void 0 ? void 0 : routesTable.trim()) && !(dynamicTable === null || dynamicTable === void 0 ? void 0 : dynamicTable.trim()) ? FALLBACK_COMPARISON_TEXT : null);
     if (existingComment) {
         console.log(`Updating comment ${existingComment.id}`);
         const response = await octokit.rest.issues.updateComment(Object.assign(Object.assign({}, github.context.repo), { comment_id: existingComment.id, body }));
