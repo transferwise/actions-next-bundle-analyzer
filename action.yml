@@ -14,7 +14,7 @@ inputs:
 
       Available options:
         always: Always comment on PRs, even if it's just to say there are no significant changes.
-        skip-insignificant: Skip commenting on PRs if there are no signficant changes in page sizes.
+        skip-insignificant: Skip commenting on PRs if there are no significant changes in page sizes.
     required: false
     default: 'always'
   create-issue:
