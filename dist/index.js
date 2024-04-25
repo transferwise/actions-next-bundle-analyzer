@@ -127810,7 +127810,7 @@ function getComparisonMarkdownTable({ referenceBundleSizes, actualBundleSizes, n
     // Produce a Markdown table with each page, its size and difference to default branch
     const rows = getPageChangeInfo(referenceBundleSizes, actualBundleSizes);
     if (rows.length === 0) {
-        return `${name}: None found.`;
+        return null;
     }
     // No diff if reference bundle sizes is empty
     if (referenceBundleSizes.length === 0) {
