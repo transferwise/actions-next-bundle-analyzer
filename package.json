@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "main": "dist/index.js",
   "author": "Stephen Brandwood <614392+sbrandwoo@users.noreply.github.com>",
-  "license": "UNLICENSED",
+  "license": "Apache-2.0",
   "packageManager": "pnpm@8.14.1",
   "private": true,
   "scripts": {
