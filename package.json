@@ -4,7 +4,7 @@
   "main": "dist/index.js",
   "author": "Stephen Brandwood <614392+sbrandwoo@users.noreply.github.com>",
   "license": "Apache-2.0",
-  "packageManager": "pnpm@8.14.1",
+  "packageManager": "pnpm@10.24.0",
   "private": true,
   "scripts": {
     "build": "ncc build src/index.ts",
