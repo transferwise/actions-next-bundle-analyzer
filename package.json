@@ -19,7 +19,7 @@
     "@types/node": "^20.11.5",
     "@types/tmp": "^0.2.6",
     "@vercel/ncc": "^0.38.1",
-    "adm-zip": "^0.5.10",
+    "adm-zip": "^0.6.0",
     "tmp": "^0.2.1",
     "typescript": "~5.3.3",
     "vitest": "^1.2.1"
